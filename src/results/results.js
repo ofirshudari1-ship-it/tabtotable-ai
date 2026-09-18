@@ -1,0 +1,468 @@
+const host = document.getElementById('tableHost');
+const titleEl = document.getElementById('title');
+const metaEl = document.getElementById('meta');
+const csvBtn = document.getElementById('csvBtn');
+const mdBtn = document.getElementById('mdBtn');
+const printBtn = document.getElementById('printBtn');
+const historyBtn = document.getElementById('historyBtn');
+const historyPanel = document.getElementById('historyPanel');
+const searchRow = document.getElementById('searchRow');
+const searchInput = document.getElementById('searchInput');
+const clearSearch = document.getElementById('clearSearch');
+const rowCountEl = document.getElementById('rowCount');
+const toast = document.getElementById('toast');
+const refineRow = document.getElementById('refineRow');
+const refineInput = document.getElementById('refineInput');
+const refineBtn = document.getElementById('refineBtn');
+const refineStatus = document.getElementById('refineStatus');
+
+let currentResult = null;
+let sortState = { col: -1, dir: 1 };
+let allRows = [];
+let toastTimer = null;
+let historyVisible = false;
+let isLoadedFromHistory = false;
+let i18n = null;
+let localeTag = 'en-US';
+
+function tr(key, subs) {
+  return i18n ? i18n.t(key, subs) : key;
+}
+
+// Toast helper
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// Clipboard helper (fallback for extension pages)
+function copyText(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => showToast(tr('results_copied')))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      showToast(tr('results_copied'));
+    });
+}
+
+// Build table DOM from a result object
+function renderTable(result) {
+  currentResult = result;
+  host.innerHTML = '';
+  sortState = { col: -1, dir: 1 };
+  allRows = result.rows.map((r) => [...r]);
+
+  titleEl.textContent = result.title || tr('results_defaultTitle');
+
+  const table = document.createElement('table');
+
+  // thead — use DOM elements to avoid XSS from Claude-generated column names
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  result.columns.forEach((col, i) => {
+    const th = document.createElement('th');
+    th.tabIndex = 0;
+    th.dataset.col = i;
+
+    const icon = document.createElement('i');
+    icon.className = 'sort-icon';
+    icon.textContent = '↕';
+    th.appendChild(icon);
+    th.appendChild(document.createTextNode(col));
+
+    const clickSort = () => sortBy(i, table);
+    th.addEventListener('click', clickSort);
+    th.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); clickSort(); }
+    });
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  // tbody
+  const tbody = document.createElement('tbody');
+  buildBodyRows(tbody, allRows);
+  table.appendChild(tbody);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'table-wrap';
+  tableWrap.appendChild(table);
+  host.appendChild(tableWrap);
+
+  // Show search bar
+  searchRow.hidden = false;
+  updateRowCount(allRows.length, allRows.length);
+
+  csvBtn.disabled = false;
+  mdBtn.disabled = false;
+
+  refineRow.hidden = false;
+}
+
+function buildBodyRows(tbody, rows) {
+  tbody.innerHTML = '';
+  rows.forEach((row) => {
+    const tr_ = document.createElement('tr');
+    row.forEach((cell) => {
+      const td = document.createElement('td');
+      const text = String(cell ?? '');
+
+      if (/^https?:\/\//.test(text.trim())) {
+        // URL cell: link + copy button
+        const wrap = document.createElement('div');
+        wrap.className = 'link-cell';
+
+        const a = document.createElement('a');
+        a.href = text.trim();
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'link';
+        a.textContent = text.trim();
+        wrap.appendChild(a);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-url';
+        copyBtn.title = tr('results_copyUrl');
+        copyBtn.textContent = '⎘';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          copyText(text.trim());
+        });
+        wrap.appendChild(copyBtn);
+
+        td.appendChild(wrap);
+      } else {
+        td.textContent = text;
+        td.className = 'copyable';
+        td.title = tr('results_copyCell');
+        td.addEventListener('click', () => copyText(text));
+      }
+      tr_.appendChild(td);
+    });
+    tbody.appendChild(tr_);
+  });
+}
+
+function sortBy(colIndex, table) {
+  const tbody = table.querySelector('tbody');
+  if (sortState.col === colIndex) {
+    sortState.dir *= -1;
+  } else {
+    sortState.col = colIndex;
+    sortState.dir = 1;
+  }
+
+  const collator = new Intl.Collator(i18n?.lang === 'he' ? 'he' : 'en');
+  const sorted = [...allRows].sort((a, b) => {
+    const av = String(a[colIndex] ?? '').toLowerCase();
+    const bv = String(b[colIndex] ?? '').toLowerCase();
+    const parseNum = (v) => parseFloat(v.replace(/[^\d.]/g, ''));
+    const an = parseNum(av), bn = parseNum(bv);
+    if (!isNaN(an) && !isNaN(bn)) return sortState.dir * (an - bn);
+    return sortState.dir * collator.compare(av, bv);
+  });
+
+  buildBodyRows(tbody, sorted);
+  applySearch(searchInput.value);
+
+  // Update header sort icons
+  table.querySelectorAll('thead th').forEach((th, i) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
+    if (i === colIndex) {
+      th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+      icon.textContent = sortState.dir === 1 ? '↑' : '↓';
+    } else {
+      icon.textContent = '↕';
+    }
+  });
+}
+
+function applySearch(query) {
+  const q = query.trim().toLowerCase();
+  const rows = host.querySelectorAll('tbody tr');
+  let visible = 0;
+  rows.forEach((tr_) => {
+    const matches = !q || Array.from(tr_.querySelectorAll('td')).some((td) =>
+      td.textContent.toLowerCase().includes(q)
+    );
+    tr_.classList.toggle('hidden-row', !matches);
+    if (matches) visible++;
+  });
+  updateRowCount(visible, rows.length);
+  clearSearch.hidden = !q;
+}
+
+function updateRowCount(visible, total) {
+  rowCountEl.textContent = visible === total
+    ? tr('results_rowsAll', [String(total)])
+    : tr('results_rowsFiltered', [String(visible), String(total)]);
+}
+
+searchInput.addEventListener('input', () => applySearch(searchInput.value));
+
+clearSearch.addEventListener('click', () => {
+  searchInput.value = '';
+  applySearch('');
+  searchInput.focus();
+});
+
+// Keyboard shortcuts: Ctrl+F → focus search, Escape → clear search
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    if (searchRow.hidden) return;
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  if (e.key === 'Escape' && document.activeElement === searchInput) {
+    searchInput.value = '';
+    applySearch('');
+  }
+});
+
+// CSV export
+function buildCsv(result) {
+  const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [
+    result.columns.map(escape).join(','),
+    ...result.rows.map((r) => r.map(escape).join(',')),
+  ];
+  return '﻿' + lines.join('\r\n');
+}
+
+csvBtn.addEventListener('click', () => {
+  if (!currentResult) return;
+  const csv = buildCsv(currentResult);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(currentResult.title || 'tabtotable').replace(/[^\w֐-׿\-]+/g, '_')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// Markdown export (copy to clipboard)
+function buildMarkdown(result) {
+  const sep = result.columns.map(() => '---').join(' | ');
+  const lines = [
+    `# ${result.title || 'TabToTable'}`,
+    '',
+    '| ' + result.columns.join(' | ') + ' |',
+    '| ' + sep + ' |',
+    ...result.rows.map((r) => '| ' + r.map((c) => String(c ?? '').replace(/\|/g, '\\|')).join(' | ') + ' |'),
+  ];
+  return lines.join('\n');
+}
+
+mdBtn.addEventListener('click', () => {
+  if (!currentResult) return;
+  copyText(buildMarkdown(currentResult));
+  showToast(tr('results_mdCopied'));
+});
+
+// Print
+printBtn.addEventListener('click', () => window.print());
+
+// Follow-up refine: ask Claude to adjust the just-built table (add/remove a
+// column, filter rows, re-sort, add an analysis column, ...) without
+// rebuilding from scratch. One explicit user-initiated API call per click —
+// disabled while in flight so a double-click can't fire it twice.
+let refining = false;
+
+function setRefineStatus(text, kind) {
+  refineStatus.textContent = text;
+  refineStatus.className = 'refine-status' + (kind ? ' ' + kind : '');
+}
+
+function doRefine() {
+  if (refining) return;
+  const instruction = refineInput.value.trim();
+  if (!instruction) {
+    setRefineStatus(tr('results_refineEmpty'), 'error');
+    return;
+  }
+  if (!currentResult) return;
+
+  refining = true;
+  refineBtn.disabled = true;
+  refineInput.disabled = true;
+  const tableWrap = host.querySelector('.table-wrap');
+  if (tableWrap) tableWrap.classList.add('busy');
+  setRefineStatus(tr('results_refining'), '');
+
+  chrome.runtime.sendMessage({ type: 'REFINE_TABLE', instruction }, (response) => {
+    refining = false;
+    refineBtn.disabled = false;
+    refineInput.disabled = false;
+    if (tableWrap) tableWrap.classList.remove('busy');
+
+    if (chrome.runtime.lastError) {
+      setRefineStatus(tr('popup_errPrefix') + chrome.runtime.lastError.message, 'error');
+      return;
+    }
+    if (!response || response.error) {
+      setRefineStatus(tr('popup_errPrefix') + (response ? response.error : 'unknown'), 'error');
+      return;
+    }
+
+    renderTable(response.table);
+    const when = new Date().toLocaleString(localeTag);
+    metaEl.textContent = `${tr('results_builtFrom', [String(response.table.rows.length)])} · ${when} · "${instruction}"`;
+    refineInput.value = '';
+    setRefineStatus(tr('results_refineDone'), 'ok');
+    window.scrollTo(0, 0);
+  });
+}
+
+refineBtn.addEventListener('click', doRefine);
+refineInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doRefine();
+});
+
+// History panel
+historyBtn.addEventListener('click', () => {
+  historyVisible = !historyVisible;
+  if (historyVisible) {
+    renderHistory();
+    historyPanel.hidden = false;
+    historyBtn.textContent = tr('results_historyClose');
+  } else {
+    historyPanel.hidden = true;
+    historyBtn.textContent = tr('results_history');
+  }
+});
+
+function renderHistory() {
+  historyPanel.innerHTML = '';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'history-header';
+
+  const h3 = document.createElement('h3');
+  h3.textContent = tr('results_historyTitle');
+  hdr.appendChild(h3);
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'history-close';
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', () => {
+    historyPanel.hidden = true;
+    historyVisible = false;
+    historyBtn.textContent = tr('results_history');
+  });
+  hdr.appendChild(closeBtn);
+  historyPanel.appendChild(hdr);
+
+  chrome.runtime.sendMessage({ type: 'GET_HISTORY' }, (resp) => {
+    if (chrome.runtime.lastError) return;
+    const items = resp?.history || [];
+    const list = document.createElement('div');
+    list.className = 'history-list';
+
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'history-empty';
+      empty.textContent = tr('results_histEmpty');
+      list.appendChild(empty);
+    } else {
+      items.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'history-item' + (idx === 0 && !isLoadedFromHistory ? ' active' : '');
+
+        const date = new Date(item.scanAt);
+        const dateStr = date.toLocaleDateString(localeTag, { day: 'numeric', month: 'short' });
+        const timeStr = date.toLocaleTimeString(localeTag, { hour: '2-digit', minute: '2-digit' });
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'history-item-title';
+        titleSpan.textContent = item.title;
+
+        const metaSpan = document.createElement('span');
+        metaSpan.className = 'history-item-meta';
+        metaSpan.textContent = `${dateStr} ${timeStr} · ${item.tabCount} ${tr('popup_lastScanTabsSuffix')}`;
+
+        div.appendChild(titleSpan);
+        div.appendChild(metaSpan);
+        div.addEventListener('click', () => {
+          document.querySelectorAll('.history-item').forEach((d) => d.classList.remove('active'));
+          div.classList.add('active');
+          loadHistoryEntry(item);
+        });
+        list.appendChild(div);
+      });
+    }
+
+    historyPanel.appendChild(list);
+  });
+}
+
+function loadHistoryEntry(item) {
+  isLoadedFromHistory = true;
+  renderTable(item.table);
+  const date = new Date(item.scanAt);
+  let meta = `${tr('results_builtFrom', [String(item.tabCount)])} · ${date.toLocaleString(localeTag)}`;
+  if (item.context) meta += ` · "${item.context}"`;
+  if (item.model) meta += ` · ${item.model.includes('haiku') ? 'Haiku' : 'Sonnet'}`;
+  metaEl.textContent = meta;
+  window.scrollTo(0, 0);
+}
+
+async function init() {
+  const { settings, lastResult, lastScanAt, lastTabCount, lastContext, lastModel } = await chrome.storage.local.get([
+    'settings', 'lastResult', 'lastScanAt', 'lastTabCount', 'lastContext', 'lastModel',
+  ]);
+
+  const theme = settings?.theme || 'system';
+  if (theme !== 'system') {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  const fontSize = settings?.fontSize || 'medium';
+  if (fontSize !== 'medium') {
+    document.documentElement.setAttribute('data-fontsize', fontSize);
+  }
+
+  const lang = settings?.uiLang || 'en';
+  localeTag = lang === 'he' ? 'he-IL' : 'en-US';
+  i18n = await TTT_I18N.load(lang);
+  // Applies every data-i18n / data-i18n-title / data-i18n-placeholder element,
+  // including the title/buttons/search placeholder that used to be hardcoded
+  // Hebrew strings in results.html — this is now the single source of truth
+  // for their text regardless of which language is active.
+  TTT_I18N.applyToDom(i18n, document);
+
+  if (!lastResult || !lastResult.columns || !lastResult.rows) {
+    host.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.id = 'empty';
+    empty.textContent = tr('results_empty');
+    host.appendChild(empty);
+    csvBtn.disabled = true;
+    mdBtn.disabled = true;
+    return;
+  }
+
+  renderTable(lastResult);
+
+  const when = lastScanAt ? new Date(lastScanAt).toLocaleString(localeTag) : '';
+  const modelLabel = lastModel ? (lastModel.includes('haiku') ? ' · Haiku' : ' · Sonnet') : '';
+  let metaText = `${tr('results_builtFrom', [String(lastTabCount || lastResult.rows.length)])} · ${when}${modelLabel}`;
+  if (lastContext) metaText += ` · "${lastContext}"`;
+  metaEl.textContent = metaText;
+}
+
+init();

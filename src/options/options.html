@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>TabToTable AI — Settings</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/brand.css">
+<style>
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+  .panel {
+    width: 100%;
+    max-width: 500px;
+  }
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-family: "Frank Ruhl Libre", Georgia, serif;
+    font-size: 21px;
+    margin: 0;
+  }
+  p.lead {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin: 14px 0 0;
+  }
+  p.lead b { color: var(--ink); }
+  .field { margin-bottom: 16px; }
+
+  /* API key row */
+  .key-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .key-row input { flex: 1; }
+  .toggle-vis {
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 9px 11px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .toggle-vis:hover { color: var(--ink); }
+  .toggle-vis:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .action-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .action-row button { width: auto; padding-inline: 18px; }
+  #saved {
+    font-size: 12.5px;
+    color: var(--good);
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  #saved.show { opacity: 1; }
+
+  /* Key status */
+  .key-status {
+    margin-top: 8px;
+    font-size: 12.5px;
+    min-height: 16px;
+    line-height: 1.5;
+  }
+  .key-status.ok { color: var(--good); }
+  .key-status.error { color: var(--bad); }
+  .key-status.testing { color: var(--ink-faint); }
+
+  .quota-summary {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .range-row input { flex: 1; }
+  .range-val {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 28px;
+    text-align: center;
+    direction: ltr;
+  }
+
+  .danger-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .danger-row button { flex: 1; min-width: 140px; }
+
+  .inline-feedback {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--good);
+    font-weight: 600;
+    min-height: 16px;
+  }
+
+  .legal-links { display: flex; gap: 16px; font-size: 12px; }
+  .legal-links a { color: var(--ink-soft); text-decoration: underline; }
+  .legal-links a:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="wordmark">
+      <span style="font-size:22px;">📊</span>
+      <h1 data-i18n="options_title">Settings</h1>
+    </div>
+    <p class="lead">
+      <span data-i18n="options_leadPre"></span>
+      <b data-i18n="options_leadBold"></b>
+      <span data-i18n="options_leadPost"></span>
+    </p>
+
+    <!-- API Key -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_apiKeySection"></p>
+      <div class="field">
+        <div class="key-row">
+          <input type="password" id="apiKey" data-i18n-placeholder="options_apiKeyPlaceholder" autocomplete="off" spellcheck="false" />
+          <button class="toggle-vis" id="toggleVis" data-i18n-title="options_toggleVis">👁</button>
+        </div>
+      </div>
+      <div class="action-row">
+        <button id="save" class="btn" style="width:auto; padding-inline:22px;" data-i18n="options_save"></button>
+        <button id="testKey" class="btn btn-secondary" style="width:auto; padding-inline:16px;" data-i18n="options_testKey"></button>
+        <span id="saved" data-i18n="options_saved"></span>
+      </div>
+      <div class="key-status" id="keyStatus"></div>
+      <div class="quota-summary" id="quotaSummary"></div>
+    </div>
+
+    <!-- Model -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_modelSection"></p>
+      <div class="model-cards">
+        <div class="model-card" id="card-sonnet" data-model="claude-sonnet-5" tabindex="0" role="radio">
+          <div class="model-name" data-i18n="options_modelSonnetName"></div>
+          <div class="model-desc" data-i18n="options_modelSonnetDesc"></div>
+          <span class="model-tag" data-i18n="options_modelSonnetTag"></span>
+        </div>
+        <div class="model-card" id="card-haiku" data-model="claude-haiku-4-5-20251001" tabindex="0" role="radio">
+          <div class="model-name" data-i18n="options_modelHaikuName"></div>
+          <div class="model-desc" data-i18n="options_modelHaikuDesc"></div>
+          <span class="model-tag" data-i18n="options_modelHaikuTag"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Language -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_uiLangSection"></p>
+      <div class="segmented">
+        <input type="radio" name="uiLang" id="ui-en" value="en">
+        <label for="ui-en" data-i18n="options_langEn"></label>
+        <input type="radio" name="uiLang" id="ui-he" value="he">
+        <label for="ui-he" data-i18n="options_langHe"></label>
+      </div>
+      <div class="field-hint" data-i18n="options_uiLangHint"></div>
+    </div>
+
+    <!-- Table (output) language -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_tableLangSection"></p>
+      <div class="segmented">
+        <input type="radio" name="lang" id="lang-auto" value="auto">
+        <label for="lang-auto" data-i18n="options_tableLangAuto"></label>
+        <input type="radio" name="lang" id="lang-he" value="he">
+        <label for="lang-he" data-i18n="options_tableLangHe"></label>
+        <input type="radio" name="lang" id="lang-en" value="en">
+        <label for="lang-en" data-i18n="options_tableLangEn"></label>
+      </div>
+    </div>
+
+    <!-- Default context -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_defaultContextSection"></p>
+      <input type="text" id="defaultContext" dir="auto" data-i18n-placeholder="options_defaultContextPlaceholder" maxlength="200" autocomplete="off" />
+      <div class="field-hint" data-i18n="options_defaultContextHint"></div>
+    </div>
+
+    <!-- Font size -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_fontSizeSection"></p>
+      <div class="segmented">
+        <input type="radio" name="fontSize" id="fs-small" value="small">
+        <label for="fs-small" data-i18n="options_fontSmall"></label>
+        <input type="radio" name="fontSize" id="fs-medium" value="medium">
+        <label for="fs-medium" data-i18n="options_fontMedium"></label>
+        <input type="radio" name="fontSize" id="fs-large" value="large">
+        <label for="fs-large" data-i18n="options_fontLarge"></label>
+      </div>
+    </div>
+
+    <!-- Max tabs -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_maxTabsSection"></p>
+      <div class="range-row">
+        <input type="range" id="maxTabs" min="5" max="40" step="5" value="40">
+        <div class="range-val" id="maxTabsVal">40</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);margin-top:4px;">
+        <span>5</span><span>40</span>
+      </div>
+    </div>
+
+    <!-- Theme -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_themeSection"></p>
+      <div class="segmented">
+        <input type="radio" name="theme" id="theme-system" value="system">
+        <label for="theme-system" data-i18n="options_themeSystem"></label>
+        <input type="radio" name="theme" id="theme-light" value="light">
+        <label for="theme-light" data-i18n="options_themeLight"></label>
+        <input type="radio" name="theme" id="theme-dark" value="dark">
+        <label for="theme-dark" data-i18n="options_themeDark"></label>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_dangerSection"></p>
+      <div class="danger-row">
+        <button id="resetQuota" class="btn btn-danger btn-sm" data-i18n="options_resetQuota"></button>
+        <button id="clearHistory" class="btn btn-danger btn-sm" data-i18n="options_clearHistory"></button>
+      </div>
+      <div class="danger-row">
+        <button id="clearAll" class="btn btn-danger btn-sm" data-i18n="options_clearAll"></button>
+      </div>
+      <div class="inline-feedback" id="dangerFeedback"></div>
+    </div>
+
+    <!-- Legal -->
+    <div class="section">
+      <p class="section-title" data-i18n="options_legalSection"></p>
+      <div class="legal-links">
+        <a href="../../PRIVACY.md" target="_blank" rel="noopener" data-i18n="options_privacyLink"></a>
+        <a href="../../EULA.md" target="_blank" rel="noopener" data-i18n="options_eulaLink"></a>
+      </div>
+    </div>
+
+    <div class="note">
+      <span data-i18n="options_noKeyLink"></span>
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.
+    </div>
+  </div>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

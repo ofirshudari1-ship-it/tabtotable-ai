@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>TabToTable AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/brand.css">
+<style>
+  body { width: 330px; padding: 18px; }
+  h1 {
+    font-size: 15px;
+    margin: 0 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 700;
+  }
+  .toprow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  p.sub {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin: 2px 0 0;
+  }
+  .field { margin-bottom: 12px; }
+  #scanLabel { display: inline-flex; align-items: center; gap: 8px; }
+  .quota-block {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .quota-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+  .footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+  }
+  .footer a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .footer a:hover { color: var(--ink); text-decoration: underline; }
+  .footer a:focus-visible,
+  button:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .last-scan {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .last-scan a {
+    color: var(--ink-soft);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* Tab picker */
+  .tabpicker-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .tabpicker-toggle:hover { background: var(--surface); }
+  .tabpicker-toggle .chev { transition: transform 0.15s; opacity: 0.6; }
+  .tabpicker-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  #tabPicker {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-2);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .tabpicker-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+  }
+  .tabpicker-actions button {
+    background: none;
+    border: none;
+    color: var(--accent-ink);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+  .tabpicker-actions button:hover { text-decoration: underline; }
+  .tabpicker-count { color: var(--ink-faint); }
+  .tabpicker-list {
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .tabpicker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .tabpicker-item:hover { background: var(--surface); }
+  .tabpicker-item input[type="checkbox"] {
+    flex: none;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .tabpicker-item img {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+  .tabpicker-item span {
+    font-size: 12px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tabpicker-empty {
+    padding: 12px 10px;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="accent-bar"></div>
+  <div class="toprow">
+    <div>
+      <h1>📊 TabToTable AI</h1>
+      <p class="sub" data-i18n="popup_subtitle"></p>
+    </div>
+    <div id="tabChip" class="tab-chip" style="opacity:0">
+      <span class="dot"></span>
+      <span id="tabCount">...</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="context" data-i18n="popup_contextLabel"></label>
+    <input type="text" id="context" dir="auto" data-i18n-placeholder="popup_contextPlaceholder" maxlength="200" />
+  </div>
+
+  <button id="tabPickerToggle" class="tabpicker-toggle" aria-expanded="false" aria-controls="tabPicker">
+    <span id="tabPickerToggleLabel"></span>
+    <span class="chev">▾</span>
+  </button>
+  <div id="tabPicker" hidden>
+    <div class="tabpicker-actions">
+      <span class="tabpicker-count" id="tabPickerCount"></span>
+      <span>
+        <button type="button" id="tabPickerAll" data-i18n="popup_pickerSelectAll"></button>
+        · <button type="button" id="tabPickerNone" data-i18n="popup_pickerSelectNone"></button>
+      </span>
+    </div>
+    <div class="tabpicker-list" id="tabPickerList"></div>
+  </div>
+
+  <button id="scan" class="btn">
+    <span id="scanLabel"></span>
+  </button>
+
+  <div id="lastScan" class="last-scan" hidden></div>
+
+  <div id="status" class="status-msg" role="status" aria-live="polite"></div>
+
+  <div class="quota-block">
+    <div class="quota-row">
+      <span id="quotaText"></span>
+      <span class="badge" id="quotaBadge"></span>
+    </div>
+    <div class="quota-bar-track">
+      <div id="quotaFill" class="quota-bar-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a id="openOptions" href="#"></a>
+    <span class="badge">v0.7.0</span>
+  </div>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
