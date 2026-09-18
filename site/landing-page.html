@@ -591,6 +591,20 @@
     .steps { grid-template-columns: 1fr; }
     .features { grid-template-columns: 1fr; }
   }
+
+  /* ---------- Version history ---------- */
+  .history-list { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .history-row { background: var(--surface-2); padding: 16px 20px; display: flex; align-items: baseline; gap: 14px; }
+  .history-row .v { font-family: "IBM Plex Mono", monospace; direction: ltr; font-weight: 700; color: var(--accent-ink); background: var(--accent-soft); padding: 2px 9px; border-radius: 999px; font-size: 12.5px; flex: none; }
+  .history-row .v.current { background: var(--accent); }
+  .history-row .d { font-size: 12px; color: var(--ink-faint); font-family: "IBM Plex Mono", monospace; direction: ltr; flex: none; }
+  .history-row .t { font-size: 14px; color: var(--ink-soft); }
+
+  /* ---------- Updates / honesty panel ---------- */
+  .updates-panel { background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; padding: 28px 30px; box-shadow: var(--shadow); }
+  .updates-panel .warn-badge { display: inline-flex; align-items: center; gap: 8px; font-family: "IBM Plex Mono", monospace; direction: ltr; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line-strong); padding: 5px 12px; border-radius: 999px; margin-bottom: 16px; }
+  .updates-panel ol { margin: 18px 0 0; padding-inline-start: 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .updates-panel a.gh-link { color: var(--accent-ink); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; text-decoration: none; font-family: "IBM Plex Mono", monospace; direction: ltr; unicode-bidi: isolate; }
 </style>
 
 <header class="site">
@@ -599,7 +613,10 @@
       <span class="name">📊 TabToTable AI</span>
       <span class="version-chip mono">v0.7.0 · MVP</span>
     </div>
-    <a class="btn btn-primary" href="#install">להתקנה</a>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a class="btn btn-ghost" href="https://github.com/ofirshudari1-ship-it/tabtotable-ai" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="#install">להתקנה</a>
+    </div>
   </div>
 </header>
 
@@ -810,6 +827,46 @@
   </div>
 </section>
 
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Version history</span>
+      <h2>מה השתנה בכל גרסה</h2>
+      <p>היסטוריה מלאה, כולל נימוקים לכל שינוי, ב-<code class="mono" style="background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:4px;">CHANGELOG.md</code> ב-<a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/blob/master/CHANGELOG.md" target="_blank" rel="noopener">GitHub</a>.</p>
+    </div>
+    <div class="history-list">
+      <div class="history-row"><span class="v current mono">v0.7.0</span><span class="d">2026-09-15</span><span class="t">בחירת לשוניות ידנית (Tab Picker), עדכון/Refine של טבלה קיימת, סריקה מקבילית, timeout+retry על ה-API.</span></div>
+      <div class="history-row"><span class="v mono">v0.6.0</span><span class="d">2026-09-15</span><span class="t">ביקורת RTL/i18n מלאה, אייקון 32px חסר, build script חד-פעמי, חיזוק CSP.</span></div>
+      <div class="history-row"><span class="v mono">v0.5.0</span><span class="d">2026-09-14</span><span class="t">שדרוג מבני מלא (src/ מפוצל, _locales/ תקני), PRIVACY.md/EULA.md, ברירת מחדל אנגלית.</span></div>
+      <div class="history-row"><span class="v mono">v0.4.0</span><span class="d">2026-09-14</span><span class="t">CSP מפורש, שפת ממשק he/en, פתיחת הגדרות אוטומטית בהתקנה.</span></div>
+      <div class="history-row"><span class="v mono">v0.3.x</span><span class="d">2026-09-13/14</span><span class="t">מיון/חיפוש/ייצוא Markdown בטבלה, היסטוריית סריקות, אבטחת XSS.</span></div>
+      <div class="history-row"><span class="v mono">v0.1.0–0.2.0</span><span class="d">2026-09-10/13</span><span class="t">גרסת MVP ראשונה: סריקת לשוניות, בניית טבלה עם Claude, ייצוא CSV.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Updates</span>
+      <h2>איך מקבלים גרסה חדשה</h2>
+    </div>
+    <div class="updates-panel">
+      <span class="warn-badge">⚠ no auto-update</span>
+      <p style="margin:0; font-size:15px; color:var(--ink);">
+        <strong>התוסף לא מתעדכן אוטומטית.</strong> Chrome מריץ עדכון אוטומטי רק לתוספים שמותקנים מ-Chrome Web Store (דרך <code class="mono">update_url</code> שגוגל שולט בו). TabToTable AI מותקן במצב מפתח (Load unpacked) ולכן אין לו שום מנגנון עדכון — Chrome פשוט לא בודק אם יש גרסה חדשה.
+      </p>
+      <p style="margin:14px 0 0; font-size:14px; color:var(--ink-soft);">כדי לעבור לגרסה חדשה:</p>
+      <ol>
+        <li>נכנסים ל-<a class="gh-link" href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases" target="_blank" rel="noopener">github.com/ofirshudari1-ship-it/tabtotable-ai/releases</a> ומורידים את קובץ ה-zip של הגרסה החדשה.</li>
+        <li>פותחים <code class="mono">chrome://extensions</code>, מסירים (Remove) את הגרסה הישנה של TabToTable AI.</li>
+        <li>מחלצים את ה-zip החדש ולוחצים <strong>Load unpacked</strong> על התיקייה המחולצת.</li>
+      </ol>
+      <p style="margin-top:16px; font-size:13px; color:var(--ink-faint);">אם/כשהתוסף יפורסם ב-Chrome Web Store, זה ישתנה — עדכונים יתקינו את עצמם אוטומטית כמו כל תוסף רגיל. עד אז, זו הדרך היחידה.</p>
+    </div>
+  </div>
+</section>
+
 <section id="install">
   <div class="wrap">
     <div class="section-head">
@@ -821,18 +878,22 @@
       <div class="install-steps">
         <div class="install-step">
           <span class="num">1</span>
-          <p>פותחים <code class="mono">chrome://extensions</code> ומפעילים "מצב מפתח".</p>
+          <p>מורידים את <code class="mono">TabToTable-AI-v0.7.0.zip</code> מ-<a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases" target="_blank" rel="noopener">GitHub Releases</a> ומחלצים לתיקייה.</p>
         </div>
         <div class="install-step">
           <span class="num">2</span>
-          <p>לוחצים <strong>Load unpacked</strong> ובוחרים את תיקיית השורש של הפרויקט (זו שמכילה את <code class="mono">manifest.json</code>).</p>
+          <p>פותחים <code class="mono">chrome://extensions</code> ומפעילים "מצב מפתח".</p>
         </div>
         <div class="install-step">
           <span class="num">3</span>
-          <p>פותחים את הגדרות התוסף ומזינים מפתח Anthropic API אישי.</p>
+          <p>לוחצים <strong>Load unpacked</strong> ובוחרים את התיקייה המחולצת (זו שמכילה את <code class="mono">manifest.json</code>).</p>
         </div>
         <div class="install-step">
           <span class="num">4</span>
+          <p>פותחים את הגדרות התוסף ומזינים מפתח Anthropic API אישי.</p>
+        </div>
+        <div class="install-step">
+          <span class="num">5</span>
           <p>פותחים כמה לשוניות, לוחצים על האייקון — והטבלה הראשונה מוכנה.</p>
         </div>
       </div>
@@ -848,7 +909,7 @@
 
 <footer>
   <div class="wrap footer-row">
-    <span>📊 TabToTable AI — גרסת מחקר, לא מפורסם ב-Chrome Web Store</span>
+    <span>📊 TabToTable AI — גרסת מחקר, לא מפורסם ב-Chrome Web Store · <a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai" target="_blank" rel="noopener">GitHub</a></span>
     <div class="footer-dots">
       <span style="background:var(--dot-1)"></span>
       <span style="background:var(--dot-2)"></span>
