@@ -2,3 +2,8 @@
 node_modules/
 .DS_Store
 Thumbs.db
+SPEC.md
+CHANGELOG.md
+PROJECT.md
+RELEASE-CHECKLIST.md
+DELETIONS.md
