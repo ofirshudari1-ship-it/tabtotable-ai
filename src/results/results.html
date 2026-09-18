@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>TabToTable AI — Results</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/brand.css">
+<style>
+  body { padding: 36px; }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .titleblock { display: flex; align-items: flex-start; gap: 10px; }
+  h1 {
+    font-family: "Frank Ruhl Libre", Georgia, serif;
+    font-size: 22px;
+    margin: 0;
+  }
+  .meta { font-size: 12.5px; color: var(--ink-faint); margin-top: 4px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .actions .btn { width: auto; padding-inline: 16px; }
+
+  /* Search bar */
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+  .search-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 13.5px;
+    font-family: inherit;
+  }
+  .search-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .row-count {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: "IBM Plex Mono", monospace;
+    white-space: nowrap;
+  }
+  .clear-search {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .clear-search:hover { color: var(--ink); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface-2);
+    box-shadow: var(--shadow);
+    animation: table-in 0.28s ease;
+  }
+  @keyframes table-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .table-wrap { animation: none; }
+  }
+  /* Font size variants */
+  :root { --table-fs: 14px; }
+  [data-fontsize="small"] { --table-fs: 12px; }
+  [data-fontsize="large"] { --table-fs: 17px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+    font-size: var(--table-fs);
+  }
+  th, td {
+    text-align: start;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  thead th {
+    background: var(--accent-soft);
+    font-weight: 700;
+    font-family: "IBM Plex Mono", monospace;
+    text-align: start;
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--ink);
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { background: rgba(240,162,2,0.22); }
+  thead th:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .sort-icon {
+    font-style: normal;
+    margin-inline-end: 4px;
+    opacity: 0.4;
+    font-size: 10px;
+  }
+  thead th.sort-asc .sort-icon,
+  thead th.sort-desc .sort-icon { opacity: 1; }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface); }
+  tbody tr.hidden-row { display: none; }
+
+  td.copyable {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  td.copyable:hover { background: var(--accent-soft) !important; }
+  td.copyable:active { background: rgba(240,162,2,0.28) !important; }
+
+  /* URL link cell */
+  .link-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  a.link {
+    color: var(--ink);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    font-size: 12px;
+    word-break: break-all;
+    flex: 1;
+  }
+  a.link:hover { filter: brightness(0.95); }
+  .copy-url {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex: none;
+  }
+  .copy-url:hover { color: var(--ink); background: var(--surface); }
+
+  #empty {
+    color: var(--ink-faint);
+    font-size: 14px;
+    padding: 60px 0;
+    text-align: center;
+    background: var(--surface-2);
+    border: 1px dashed var(--line-strong);
+    border-radius: 14px;
+  }
+
+  /* History panel */
+  .history-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: inherit;
+  }
+  .history-toggle:hover { background: var(--surface); }
+
+  #historyPanel {
+    margin-top: 22px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .history-header h3 {
+    font-size: 12px;
+    font-family: "IBM Plex Mono", monospace;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+  .history-close {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 2px;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .history-close:hover { color: var(--ink); }
+  .history-list { padding: 8px 0; }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.12s;
+    gap: 12px;
+  }
+  .history-item:hover { background: var(--surface); }
+  .history-item.active { background: var(--accent-soft); }
+  .history-item-title {
+    font-weight: 600;
+    font-size: 13px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .history-item-meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .history-empty {
+    padding: 16px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  #toast { direction: ltr; }
+
+  /* Refine bar */
+  .refine-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px dashed var(--line-strong);
+  }
+  .refine-row .refine-icon { font-size: 15px; flex: none; opacity: 0.85; }
+  .refine-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--ground);
+    color: var(--ink);
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .refine-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .refine-row button {
+    width: auto;
+    padding-inline: 16px;
+    flex: none;
+  }
+  .refine-status {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    min-height: 15px;
+  }
+  .refine-status.error { color: var(--bad); }
+  .refine-status.ok { color: var(--good); }
+
+  /* Loading overlay for refine (table dims while a new one is fetched) */
+  .table-wrap.busy { opacity: 0.5; pointer-events: none; transition: opacity 0.2s ease; }
+
+  @media print {
+    .actions, .search-row, #historyPanel, #toast, .refine-row, .refine-status { display: none !important; }
+    .table-wrap { box-shadow: none; border: 1px solid #ccc; }
+    body { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="titleblock">
+        <span style="font-size:20px;">📊</span>
+        <div>
+          <h1 id="title" data-i18n="results_defaultTitle"></h1>
+          <div class="meta" id="meta"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="csvBtn" class="btn btn-secondary btn-sm" data-i18n="results_csv"></button>
+        <button id="mdBtn" class="btn btn-secondary btn-sm" data-i18n="results_md"></button>
+        <button id="printBtn" class="btn btn-secondary btn-sm" data-i18n="results_print"></button>
+        <button id="historyBtn" class="history-toggle" data-i18n="results_history"></button>
+      </div>
+    </header>
+
+    <div class="search-row" id="searchRow" hidden>
+      <input type="text" id="searchInput" dir="auto" data-i18n-placeholder="results_searchPlaceholder" />
+      <button class="clear-search" id="clearSearch" data-i18n-title="results_clearSearch" hidden>✕</button>
+      <span class="row-count" id="rowCount"></span>
+    </div>
+
+    <div id="tableHost"></div>
+
+    <div class="refine-row" id="refineRow" hidden>
+      <span class="refine-icon">✨</span>
+      <input type="text" id="refineInput" dir="auto" data-i18n-placeholder="results_refinePlaceholder" maxlength="200" />
+      <button id="refineBtn" class="btn btn-secondary btn-sm" data-i18n="results_refineBtn"></button>
+    </div>
+    <div class="refine-status" id="refineStatus"></div>
+
+    <div id="historyPanel" hidden></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="results.js"></script>
+</body>
+</html>

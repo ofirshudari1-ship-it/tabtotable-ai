@@ -1,0 +1,860 @@
+<title>TabToTable AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Assistant:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #E7EBEE;
+    --surface: #F4F6F7;
+    --surface-2: #FFFFFF;
+    --ink: #12161C;
+    --ink-soft: #4B5560;
+    --ink-faint: #7C8792;
+    --line: rgba(18, 22, 28, 0.13);
+    --line-strong: rgba(18, 22, 28, 0.24);
+    --accent: #F0A202;
+    --accent-ink: #1B1400;
+    --accent-soft: rgba(240, 162, 2, 0.14);
+    --good: #0E8F6A;
+    --dot-1: #4C6EF5;
+    --dot-2: #E8590C;
+    --dot-3: #12B886;
+    --dot-4: #9C6ADE;
+    --shadow: 0 1px 2px rgba(18,22,28,0.06), 0 8px 24px -12px rgba(18,22,28,0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10141A;
+      --surface: #161B22;
+      --surface-2: #1B212A;
+      --ink: #E9EDF1;
+      --ink-soft: #9CA7B2;
+      --ink-faint: #6E7883;
+      --line: rgba(233, 237, 241, 0.12);
+      --line-strong: rgba(233, 237, 241, 0.22);
+      --accent: #F5B942;
+      --accent-ink: #1B1400;
+      --accent-soft: rgba(245, 185, 66, 0.16);
+      --good: #3FD9A6;
+      --dot-1: #7B98FF;
+      --dot-2: #FF8752;
+      --dot-3: #34D9A8;
+      --dot-4: #B996FF;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10141A;
+    --surface: #161B22;
+    --surface-2: #1B212A;
+    --ink: #E9EDF1;
+    --ink-soft: #9CA7B2;
+    --ink-faint: #6E7883;
+    --line: rgba(233, 237, 241, 0.12);
+    --line-strong: rgba(233, 237, 241, 0.22);
+    --accent: #F5B942;
+    --accent-ink: #1B1400;
+    --accent-soft: rgba(245, 185, 66, 0.16);
+    --good: #3FD9A6;
+    --dot-1: #7B98FF;
+    --dot-2: #FF8752;
+    --dot-3: #34D9A8;
+    --dot-4: #B996FF;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -14px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: "Assistant", "Segoe UI", Arial, sans-serif;
+    direction: rtl;
+    line-height: 1.6;
+  }
+
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  h1, h2, h3 {
+    font-family: "Frank Ruhl Libre", Georgia, serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Header ---------- */
+  header.site {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--ground) 80%, transparent);
+    backdrop-filter: blur(6px);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .site-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .wordmark .name {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .version-chip {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow);
+  }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--line-strong);
+    color: var(--ink);
+  }
+  .btn-ghost:hover { background: var(--surface); }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 76px 0 56px;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+
+  h1.headline {
+    font-size: clamp(34px, 4.6vw, 54px);
+    font-weight: 900;
+    line-height: 1.12;
+  }
+  h1.headline .accent-underline {
+    background: linear-gradient(transparent 62%, var(--accent-soft) 62%);
+  }
+
+  .subhead {
+    margin-top: 20px;
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 46ch;
+  }
+
+  .hero-ctas {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero-note {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Hero visual: tabs -> table ---------- */
+  .hero-visual-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px 22px 20px;
+    box-shadow: var(--shadow);
+  }
+  .visual-flow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tabs-strip {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .tab-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px 8px 3px 3px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    min-width: 0;
+  }
+  .tab-chip .tab-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .tab-chip .tab-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .tab-chip:nth-child(1) { width: 100%; }
+  .tab-chip:nth-child(2) { width: 92%; margin-inline-start: 4%; }
+  .tab-chip:nth-child(3) { width: 84%; margin-inline-start: 8%; }
+  .tab-chip:nth-child(4) { width: 96%; }
+
+  .flow-processor {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .processor-pill {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 1px dashed var(--line-strong);
+    display: grid;
+    place-items: center;
+  }
+  .processor-pill .core {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .processor-pill .core { animation: none; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.6; }
+  }
+  .processor-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+
+  .mini-table {
+    flex: 1.15;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .mini-table table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .mini-table th, .mini-table td {
+    padding: 7px 9px;
+    text-align: right;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .mini-table th {
+    background: var(--accent-soft);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .mini-table tr:last-child td { border-bottom: none; }
+  .mini-table td.price { font-family: "IBM Plex Mono", monospace; direction: ltr; text-align: left; }
+
+  .visual-caption {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  /* ---------- Section shell ---------- */
+  section { padding: 64px 0; }
+  section.alt {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .section-head { max-width: 60ch; margin-bottom: 36px; }
+  .section-kicker {
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .section-head h2 { font-size: clamp(24px, 3vw, 32px); }
+  .section-head p { color: var(--ink-soft); margin-top: 12px; font-size: 16px; }
+
+  /* ---------- Problem block ---------- */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  .problem-copy p { color: var(--ink-soft); font-size: 16px; margin: 0 0 14px; }
+  .problem-copy strong { color: var(--ink); }
+
+  .terminal {
+    background: var(--ink);
+    color: #DCE3EA;
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    direction: ltr;
+    box-shadow: var(--shadow);
+  }
+  :root:not([data-theme="light"]) .terminal { background: #05070A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .terminal { background: #05070A; } }
+  .terminal-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+  .terminal-bar span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+  .terminal-title { color: rgba(255,255,255,0.4); margin-inline-start: auto; font-size: 11px; }
+  .terminal-line { padding: 3px 0; color: rgba(220,227,234,0.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .terminal-line .n { color: rgba(220,227,234,0.35); margin-inline-end: 10px; }
+  .terminal-line.hl { color: #F5C15C; }
+
+  /* ---------- Steps ---------- */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .step {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .step-num {
+    font-family: "Frank Ruhl Libre", serif;
+    font-weight: 900;
+    font-size: 26px;
+    color: var(--accent);
+  }
+  .step h3 { font-size: 16px; font-family: "Assistant", sans-serif; font-weight: 700; }
+  .step p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+  /* ---------- Features ---------- */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .feature {
+    background: var(--surface-2);
+    padding: 24px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .feature h3 { font-size: 15.5px; font-family: "Assistant", sans-serif; font-weight: 700; }
+  .feature p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+  /* ---------- Example table ---------- */
+  .example-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .example-note .swatch { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+
+  .result-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+    box-shadow: var(--shadow);
+  }
+  table.result {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 640px;
+  }
+  table.result th, table.result td {
+    text-align: right;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.result thead th {
+    background: var(--accent-soft);
+    font-weight: 700;
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    text-align: right;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  table.result tbody tr:last-child td { border-bottom: none; }
+  table.result td.link {
+    font-family: "IBM Plex Mono", monospace;
+    direction: ltr;
+    text-align: left;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+  }
+  table.result td.num { font-family: "IBM Plex Mono", monospace; direction: ltr; }
+
+  /* ---------- Pricing ---------- */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .price-card {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 26px;
+    background: var(--surface-2);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .price-card.active { border-color: var(--accent); box-shadow: var(--shadow); }
+  .price-card.future { border-style: dashed; }
+  .price-card .tier-name { font-size: 13px; font-family: "IBM Plex Mono", monospace; direction: ltr; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+  .price-card .tier-value { font-size: 30px; font-weight: 900; font-family: "Frank Ruhl Libre", serif; }
+  .price-card .tier-value .unit { font-size: 14px; font-family: "Assistant", sans-serif; font-weight: 600; color: var(--ink-soft); }
+  .price-card ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .price-card li { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; color: var(--ink-soft); }
+  .price-card li .mark { flex: none; margin-top: 3px; width: 15px; height: 15px; border-radius: 50%; display: grid; place-items: center; font-size: 9px; }
+  .mark.yes { background: var(--good); color: #08281E; }
+  .mark.soon { background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-faint); }
+  .badge-soon {
+    align-self: flex-start;
+    font-size: 11px;
+    font-family: "IBM Plex Mono", monospace;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Install ---------- */
+  .install-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    box-shadow: var(--shadow);
+  }
+  .install-steps { display: flex; flex-direction: column; gap: 16px; }
+  .install-step { display: flex; gap: 12px; }
+  .install-step .num {
+    flex: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+  }
+  .install-step p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+  .install-step code {
+    font-family: "IBM Plex Mono", monospace;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    direction: ltr;
+    display: inline-block;
+  }
+  .install-side {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .install-side strong { color: var(--ink); }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 40px 0 60px;
+    border-top: 1px solid var(--line);
+  }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+  .footer-dots { display: flex; gap: 5px; }
+  .footer-dots span { width: 7px; height: 7px; border-radius: 50%; }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .problem-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .features { grid-template-columns: 1fr 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .install-panel { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .steps { grid-template-columns: 1fr; }
+    .features { grid-template-columns: 1fr; }
+  }
+</style>
+
+<header class="site">
+  <div class="wrap site-bar">
+    <div class="wordmark">
+      <span class="name">📊 TabToTable AI</span>
+      <span class="version-chip mono">v0.7.0 · MVP</span>
+    </div>
+    <a class="btn btn-primary" href="#install">להתקנה</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>תוסף כרום · ניתוח לשוניות ב-AI</span>
+      <h1 class="headline">
+        20 לשוניות פתוחות.<br>
+        <span class="accent-underline">טבלה אחת מסודרת.</span>
+      </h1>
+      <p class="subhead">
+        TabToTable AI סורק את כל הלשוניות הפתוחות בחלון שלכם ובונה מהן טבלת השוואה — תמחור, פיצ'רים, קישורים — בלחיצת כפתור אחת. בלי העתק-הדבק, בלי לאבד את החוט.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">התקינו בכרום (מצב מפתח)</a>
+        <a class="btn btn-ghost" href="#how">איך זה עובד</a>
+      </div>
+      <p class="hero-note">חינם עד 150 לשוניות סריקה בחודש · מפתח Anthropic API אישי, נשמר רק אצלכם בדפדפן.</p>
+    </div>
+
+    <div class="hero-visual-card">
+      <div class="visual-flow">
+        <div class="tabs-strip">
+          <div class="tab-chip"><span class="tab-dot" style="background:var(--dot-1)"></span><span class="tab-title">notion.so/pricing</span></div>
+          <div class="tab-chip"><span class="tab-dot" style="background:var(--dot-2)"></span><span class="tab-title">monday.com/pricing</span></div>
+          <div class="tab-chip"><span class="tab-dot" style="background:var(--dot-3)"></span><span class="tab-title">clickup.com/pricing</span></div>
+          <div class="tab-chip"><span class="tab-dot" style="background:var(--dot-4)"></span><span class="tab-title">airtable.com/pricing</span></div>
+        </div>
+        <div class="flow-processor">
+          <div class="processor-pill"><div class="core"></div></div>
+          <span class="processor-label mono">AI</span>
+        </div>
+        <div class="mini-table">
+          <table>
+            <tr><th>כלי</th><th>מחיר</th></tr>
+            <tr><td>Notion</td><td class="price">$8/mo</td></tr>
+            <tr><td>Monday</td><td class="price">$9/mo</td></tr>
+            <tr><td>ClickUp</td><td class="price">$7/mo</td></tr>
+            <tr><td>Airtable</td><td class="price">$10/mo</td></tr>
+          </table>
+        </div>
+      </div>
+      <p class="visual-caption">לדוגמה: השוואת תמחור בין כלי ניהול פרויקטים — כך נראית התוצאה בפועל</p>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap problem-grid">
+    <div class="problem-copy">
+      <span class="section-kicker">The Problem</span>
+      <h2 style="margin-bottom:16px;">המחקר לא נגמר בפתיחת לשוניות — הוא נתקע בהעתקה ביניהן</h2>
+      <p>עושים מחקר מתחרים, משווים ספקים, בודקים כלי SaaS — הדפוס תמיד זהה: פותחים עשרות לשוניות, ואז מתחילים <strong>לעבור אחת-אחת</strong> ולהעתיק ידנית שם, מחיר, פיצ'ר, לגיליון אקסל.</p>
+      <p>זו לא בעיה של חוסר בכלים. יש Excel, יש Notion. הבעיה היא <strong>המעבר הידני בין הלשונית לטבלה</strong> — עבודה שלוקחת שעה-שעתיים על משהו שאמור לקחת שניות.</p>
+    </div>
+    <div>
+      <div class="terminal">
+        <div class="terminal-bar"><span></span><span></span><span></span><span class="terminal-title">window — 6 tabs</span></div>
+        <div class="terminal-line"><span class="n">1</span>Notion — Pricing &amp; Plans</div>
+        <div class="terminal-line"><span class="n">2</span>Monday.com vs Asana — Reddit thread</div>
+        <div class="terminal-line"><span class="n">3</span>ClickUp: Features Overview</div>
+        <div class="terminal-line"><span class="n">4</span>Airtable — Templates for Sales Teams</div>
+        <div class="terminal-line"><span class="n">5</span>Basecamp Pricing 2026</div>
+        <div class="terminal-line hl"><span class="n">6</span># עכשיו צריך לזכור מה היה בכל אחת...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">How it works</span>
+      <h2>מלשוניות פתוחות לטבלה — 4 צעדים</h2>
+      <p>אין הגדרות מסובכות, אין תבניות לבחור. פותחים לשוניות, לוחצים, מקבלים טבלה.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num mono">01</span>
+        <h3>פותחים לשוניות</h3>
+        <p>כל אתר, מוצר או מתחרה שרוצים להשוות — בחלון דפדפן אחד.</p>
+      </div>
+      <div class="step">
+        <span class="step-num mono">02</span>
+        <h3>מוסיפים הקשר (רשות)</h3>
+        <p>"השוואת תמחור בין כלי CRM" — כדי לכוון את ה-AI למה שחשוב.</p>
+      </div>
+      <div class="step">
+        <span class="step-num mono">03</span>
+        <h3>לוחצים כפתור אחד</h3>
+        <p>התוסף קורא את התוכן מכל לשונית ובונה טבלת השוואה עם Claude.</p>
+      </div>
+      <div class="step">
+        <span class="step-num mono">04</span>
+        <h3>מייצאים ל-CSV</h3>
+        <p>הטבלה נפתחת בלשונית חדשה, מוכנה להעתקה, שיתוף או ייצוא.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Features</span>
+      <h2>מה יש בגרסה הנוכחית</h2>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-1)"></span>
+        <h3>עד 40 לשוניות בסריקה</h3>
+        <p>סריקה של חלון שלם בבת אחת, כולל דילוג אוטומטי על דפים מוגנים.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-2)"></span>
+        <h3>עמודות דינמיות</h3>
+        <p>ה-AI בוחר את העמודות הרלוונטיות לפי התוכן בפועל — לא תבנית קבועה.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-3)"></span>
+        <h3>ייצוא ל-CSV</h3>
+        <p>קובץ תואם עברית ו-RTL, נפתח נכון ישירות באקסל.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-4)"></span>
+        <h3>קישורים חיים</h3>
+        <p>כל שורה בטבלה מקושרת בחזרה למקור המדויק שלה.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--accent)"></span>
+        <h3>הפרטיות אצלכם</h3>
+        <p>מפתח ה-API נשמר מקומית בדפדפן בלבד ונשלח ישירות ל-Anthropic — לא דרכנו.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--good)"></span>
+        <h3>מכסה חינמית שקופה</h3>
+        <p>150 לשוניות סריקה בחודש, עם מונה נראה לעין בכל שימוש.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-1)"></span>
+        <h3>בחירת לשוניות ידנית</h3>
+        <p>מסננים אילו לשוניות נכנסות לטבלה לפני שהן נשלחות ל-AI, במקום לסרוק תמיד את הכל.</p>
+      </div>
+      <div class="feature">
+        <span class="dot" style="background:var(--dot-2)"></span>
+        <h3>✨ עדכון הטבלה (Refine)</h3>
+        <p>מבקשים בשפה חופשית לשנות את הטבלה שכבר נבנתה — עמודה נוספת, סינון, מיון — בלי לסרוק מחדש.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Sample output</span>
+      <h2>ככה נראית טבלה בפועל</h2>
+      <p>דוגמה מלאה — לא נתונים אמיתיים — כדי להמחיש איך פלט טיפוסי נראה אחרי סריקה של כמה לשוניות תמחור.</p>
+    </div>
+    <span class="example-note"><span class="swatch"></span>דוגמה להמחשה בלבד</span>
+    <div class="result-table-wrap">
+      <table class="result">
+        <thead>
+          <tr><th>כלי</th><th>מחיר התחלתי</th><th>יתרון בולט</th><th>קישור</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Notion</td><td class="num">$8 / חודש</td><td>גמישות מבנה גבוהה, גם למסמכים וגם למאגרי מידע</td><td class="link">notion.so/pricing</td></tr>
+          <tr><td>Monday.com</td><td class="num">$9 / חודש</td><td>אוטומציות מובנות ולוחות ויזואליים חזקים</td><td class="link">monday.com/pricing</td></tr>
+          <tr><td>ClickUp</td><td class="num">$7 / חודש</td><td>המחיר הזול ביותר בהשוואה, כולל AI מובנה</td><td class="link">clickup.com/pricing</td></tr>
+          <tr><td>Airtable</td><td class="num">$10 / חודש</td><td>הכי חזק כמסד נתונים לצוותי מכירות</td><td class="link">airtable.com/pricing</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Pricing</span>
+      <h2>מודל שימוש</h2>
+      <p>גרסת המחקר הנוכחית פתוחה לגמרי לשימוש חינמי. תוכנית העומק בתשלום עדיין בפיתוח.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card active">
+        <span class="tier-name">Free</span>
+        <div class="tier-value">150<span class="unit"> לשוניות / חודש</span></div>
+        <ul>
+          <li><span class="mark yes">✓</span>סריקה מלאה ובניית טבלה מ-AI</li>
+          <li><span class="mark yes">✓</span>ייצוא CSV ללא הגבלה</li>
+          <li><span class="mark yes">✓</span>מונה מכסה שקוף בכל שימוש</li>
+          <li><span class="mark yes">✓</span>מפתח API אישי — ללא תלות בנו</li>
+        </ul>
+      </div>
+      <div class="price-card future">
+        <span class="badge-soon mono">COMING SOON</span>
+        <span class="tier-name">מחקר עומק</span>
+        <div class="tier-value">בתשלום</div>
+        <ul>
+          <li><span class="mark soon">…</span>מכסת לשוניות מורחבת / ללא הגבלה</li>
+          <li><span class="mark soon">…</span>ייצוא אוטומטי בזמן אמת ל-Monday.com</li>
+          <li><span class="mark soon">…</span>שמירת היסטוריית מחקרים</li>
+          <li><span class="mark soon">…</span>מפתח API מרכזי — בלי צורך במפתח אישי</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Install</span>
+      <h2>התקנה במצב מפתח</h2>
+      <p>התוסף עדיין לא בחנות Chrome Web Store — ההתקנה היא Load unpacked, תהליך חד-פעמי של כ-2 דקות.</p>
+    </div>
+    <div class="install-panel">
+      <div class="install-steps">
+        <div class="install-step">
+          <span class="num">1</span>
+          <p>פותחים <code class="mono">chrome://extensions</code> ומפעילים "מצב מפתח".</p>
+        </div>
+        <div class="install-step">
+          <span class="num">2</span>
+          <p>לוחצים <strong>Load unpacked</strong> ובוחרים את תיקיית השורש של הפרויקט (זו שמכילה את <code class="mono">manifest.json</code>).</p>
+        </div>
+        <div class="install-step">
+          <span class="num">3</span>
+          <p>פותחים את הגדרות התוסף ומזינים מפתח Anthropic API אישי.</p>
+        </div>
+        <div class="install-step">
+          <span class="num">4</span>
+          <p>פותחים כמה לשוניות, לוחצים על האייקון — והטבלה הראשונה מוכנה.</p>
+        </div>
+      </div>
+      <div class="install-side">
+        <strong>הוראות מלאות ופתרון תקלות</strong>
+        <span>קובץ <code class="mono">INSTALL.md</code> בתיקיית הפרויקט כולל טבלת פתרון תקלות מלאה, כולל טעויות נפוצות במפתח ה-API ובמכסה החודשית.</span>
+        <strong style="margin-top:6px;">רוצים להבין את הארכיטקטורה?</strong>
+        <span>מסמך <code class="mono">SPEC.md</code> מפרט את הבעיה, הפתרון, המגבלות הידועות ומפת הדרכים המלאה.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>📊 TabToTable AI — גרסת מחקר, לא מפורסם ב-Chrome Web Store</span>
+    <div class="footer-dots">
+      <span style="background:var(--dot-1)"></span>
+      <span style="background:var(--dot-2)"></span>
+      <span style="background:var(--dot-3)"></span>
+      <span style="background:var(--dot-4)"></span>
+      <span style="background:var(--accent)"></span>
+    </div>
+  </div>
+</footer>
