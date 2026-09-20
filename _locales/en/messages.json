@@ -1,6 +1,7 @@
 {
   "appName": { "message": "TabToTable AI", "description": "Extension name" },
   "appDesc": { "message": "Turn all open tabs in a window into one organized comparison table with a single click", "description": "Extension description" },
+  "commandOpenPopup": { "message": "Open TabToTable AI", "description": "Keyboard shortcut description" },
 
   "popup_scanBtn": { "message": "Build table from open tabs" },
   "popup_scanning": { "message": "Scanning & building table..." },
@@ -74,10 +75,20 @@
 
   "options_maxTabsSection": { "message": "Tab Scan Limit" },
 
+  "options_contentDepthSection": { "message": "Content Depth" },
+  "options_depthConcise": { "message": "Concise" },
+  "options_depthStandard": { "message": "Standard" },
+  "options_depthThorough": { "message": "Thorough" },
+  "options_contentDepthHint": { "message": "How much of each page's text is read before comparing. Thorough reads more per tab — best for a handful of pages; Concise is faster and cheaper for a large batch." },
+
   "options_themeSection": { "message": "Theme" },
   "options_themeSystem": { "message": "🖥 System" },
   "options_themeLight": { "message": "☀️ Light" },
   "options_themeDark": { "message": "🌙 Dark" },
+
+  "options_shortcutSection": { "message": "Keyboard Shortcut" },
+  "options_shortcutHint": { "message": "opens the popup instantly, from any tab." },
+  "options_shortcutChange": { "message": "Change shortcut →" },
 
   "options_dangerSection": { "message": "Danger Zone" },
   "options_resetQuota": { "message": "Reset monthly quota" },
@@ -99,8 +110,11 @@
 
   "results_title": { "message": "TabToTable AI — Results" },
   "results_defaultTitle": { "message": "Comparison Table" },
-  "results_csv": { "message": "⭳ CSV" },
-  "results_md": { "message": "⎘ Markdown" },
+  "results_export": { "message": "⭳ Export" },
+  "results_exportCsv": { "message": "CSV" },
+  "results_exportMd": { "message": "Markdown (copy)" },
+  "results_exportJson": { "message": "JSON" },
+  "results_jsonCopied": { "message": "Table downloaded as JSON ✓" },
   "results_print": { "message": "🖨 Print" },
   "results_history": { "message": "🕓 History" },
   "results_historyClose": { "message": "🕓 History ✕" },

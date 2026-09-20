@@ -1,10 +1,24 @@
 const DEFAULT_MODEL = 'claude-sonnet-5';
 const DEFAULT_MAX_TABS = 40;
-const MAX_BODY_CHARS = 4000;
+const MAX_BODY_CHARS = 4000; // fallback when settings.contentDepth is missing/unrecognized
 const FREE_MONTHLY_TAB_LIMIT = 150;
 const MAX_HISTORY = 5;
 const REQUEST_TIMEOUT_MS = 60000; // main table-build/refine calls — long enough for large tab batches
 const TEST_TIMEOUT_MS = 15000; // key-test call is a 5-token ping, should fail fast
+
+// How much of each page is read before comparing. "Concise" keeps prompts
+// small (faster, cheaper, safer against context limits on a big tab batch);
+// "Thorough" reads much more per page for a handful of tabs where nuance
+// matters more than speed. Headings scale with it too since a longer page
+// tends to have more structure worth surfacing.
+const CONTENT_DEPTH = {
+  concise: { maxChars: 2000, headings: 6 },
+  standard: { maxChars: 4000, headings: 12 },
+  thorough: { maxChars: 8000, headings: 20 },
+};
+function contentDepthOf(settings) {
+  return CONTENT_DEPTH[settings?.contentDepth] || CONTENT_DEPTH.standard;
+}
 
 const DEFAULT_SETTINGS = {
   model: 'claude-sonnet-5',
@@ -14,6 +28,7 @@ const DEFAULT_SETTINGS = {
   theme: 'system',
   defaultContext: '',
   fontSize: 'medium',
+  contentDepth: 'standard',
 };
 
 // User-facing error strings, bilingual (mirrors _locales/*/messages.json keys
@@ -220,6 +235,7 @@ async function scanAndBuildTable(context, tabIds) {
   const model = settings?.model ?? DEFAULT_MODEL;
   const maxTabs = settings?.maxTabs != null ? settings.maxTabs : DEFAULT_MAX_TABS;
   const language = settings?.language ?? 'auto';
+  const depth = contentDepthOf(settings);
 
   const tabs = await chrome.tabs.query({ currentWindow: true });
   let eligible = tabs.filter((t) => t.url && /^https?:\/\//.test(t.url));
@@ -263,7 +279,7 @@ async function scanAndBuildTable(context, tabIds) {
         const injection = await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: extractPageData,
-          args: [MAX_BODY_CHARS],
+          args: [depth.maxChars, depth.headings],
         });
         return injection[0]?.result || { title: tab.title, url: tab.url, error: M.pageEmpty };
       } catch (e) {
@@ -299,14 +315,14 @@ async function scanAndBuildTable(context, tabIds) {
   return { ok: true };
 }
 
-function extractPageData(maxChars) {
+function extractPageData(maxChars, headingCount) {
   const title = document.title || '';
   const metaDesc =
     document.querySelector('meta[name="description"]')?.content ||
     document.querySelector('meta[property="og:description"]')?.content ||
     '';
   const headings = Array.from(document.querySelectorAll('h1, h2'))
-    .slice(0, 12)
+    .slice(0, headingCount || 12)
     .map((h) => h.innerText.trim())
     .filter(Boolean);
   const bodyText = (document.body?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, maxChars);

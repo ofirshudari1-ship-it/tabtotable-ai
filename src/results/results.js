@@ -1,8 +1,8 @@
 const host = document.getElementById('tableHost');
 const titleEl = document.getElementById('title');
 const metaEl = document.getElementById('meta');
-const csvBtn = document.getElementById('csvBtn');
-const mdBtn = document.getElementById('mdBtn');
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
 const printBtn = document.getElementById('printBtn');
 const historyBtn = document.getElementById('historyBtn');
 const historyPanel = document.getElementById('historyPanel');
@@ -103,8 +103,7 @@ function renderTable(result) {
   searchRow.hidden = false;
   updateRowCount(allRows.length, allRows.length);
 
-  csvBtn.disabled = false;
-  mdBtn.disabled = false;
+  exportBtn.disabled = false;
 
   refineRow.hidden = false;
 }
@@ -242,21 +241,19 @@ function buildCsv(result) {
   return '﻿' + lines.join('\r\n');
 }
 
-csvBtn.addEventListener('click', () => {
-  if (!currentResult) return;
-  const csv = buildCsv(currentResult);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+function downloadFile(content, mime, extension) {
+  const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${(currentResult.title || 'tabtotable').replace(/[^\w֐-׿\-]+/g, '_')}.csv`;
+  a.download = `${(currentResult.title || 'tabtotable').replace(/[^\w֐-׿\-]+/g, '_')}.${extension}`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-});
+}
 
-// Markdown export (copy to clipboard)
+// Markdown export (copy to clipboard — handy for pasting straight into docs/chat)
 function buildMarkdown(result) {
   const sep = result.columns.map(() => '---').join(' | ');
   const lines = [
@@ -269,10 +266,55 @@ function buildMarkdown(result) {
   return lines.join('\n');
 }
 
-mdBtn.addEventListener('click', () => {
-  if (!currentResult) return;
-  copyText(buildMarkdown(currentResult));
-  showToast(tr('results_mdCopied'));
+// JSON export (download) — the raw {title, columns, rows} shape, useful for
+// piping into another tool/script rather than reading by eye.
+function buildJson(result) {
+  return JSON.stringify({ title: result.title, columns: result.columns, rows: result.rows }, null, 2);
+}
+
+// Export dropdown: CSV + JSON download a file, Markdown copies to the
+// clipboard (kept as copy since that's the common way people reuse a
+// markdown table — pasting into a doc/chat rather than opening a .md file).
+function closeExportMenu() {
+  exportMenu.hidden = true;
+  exportBtn.setAttribute('aria-expanded', 'false');
+}
+
+exportBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = !exportMenu.hidden;
+  if (isOpen) {
+    closeExportMenu();
+  } else {
+    exportMenu.hidden = false;
+    exportBtn.setAttribute('aria-expanded', 'true');
+  }
+});
+
+exportMenu.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-format]');
+  if (!btn || !currentResult) return;
+  const format = btn.dataset.format;
+  if (format === 'csv') {
+    downloadFile(buildCsv(currentResult), 'text/csv', 'csv');
+  } else if (format === 'json') {
+    downloadFile(buildJson(currentResult), 'application/json', 'json');
+    showToast(tr('results_jsonCopied'));
+  } else if (format === 'md') {
+    copyText(buildMarkdown(currentResult));
+    showToast(tr('results_mdCopied'));
+  }
+  closeExportMenu();
+});
+
+document.addEventListener('click', (e) => {
+  if (!exportMenu.hidden && !e.target.closest('.dropdown')) closeExportMenu();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !exportMenu.hidden) {
+    closeExportMenu();
+    exportBtn.focus();
+  }
 });
 
 // Print
@@ -451,8 +493,7 @@ async function init() {
     empty.id = 'empty';
     empty.textContent = tr('results_empty');
     host.appendChild(empty);
-    csvBtn.disabled = true;
-    mdBtn.disabled = true;
+    exportBtn.disabled = true;
     return;
   }
 

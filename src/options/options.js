@@ -15,6 +15,7 @@ let currentSettings = {
   theme: 'system',
   defaultContext: '',
   fontSize: 'medium',
+  contentDepth: 'standard',
 };
 
 let i18n = null;
@@ -79,6 +80,9 @@ chrome.storage.local.get(['apiKey', 'settings'], async ({ apiKey, settings }) =>
 
   const fsRadio = document.querySelector(`input[name="fontSize"][value="${currentSettings.fontSize || 'medium'}"]`);
   if (fsRadio) fsRadio.checked = true;
+
+  const depthRadio = document.querySelector(`input[name="contentDepth"][value="${currentSettings.contentDepth || 'standard'}"]`);
+  if (depthRadio) depthRadio.checked = true;
 });
 
 // Load quota
@@ -213,6 +217,25 @@ document.querySelectorAll('input[name="fontSize"]').forEach((radio) => {
   });
 });
 
+// Content depth (how much of each page's text is sent to Claude per tab)
+document.querySelectorAll('input[name="contentDepth"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    currentSettings.contentDepth = radio.value;
+    saveSettings();
+  });
+});
+
+// Keyboard shortcut — Chrome only exposes the shortcuts editor at its own
+// dedicated internal page; there's no API to open or edit it from an
+// extension page directly.
+const openShortcutsLink = document.getElementById('openShortcuts');
+if (openShortcutsLink) {
+  openShortcutsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+  });
+}
+
 function saveSettings() {
   chrome.storage.local.set({ settings: currentSettings });
 }
@@ -245,7 +268,8 @@ document.getElementById('clearAll').addEventListener('click', () => {
     apiKeyInput.value = '';
     quotaSummary.textContent = '';
     keyStatus.textContent = '';
-    currentSettings = { model: 'claude-sonnet-5', language: 'auto', uiLang: 'en', maxTabs: 40, theme: 'system', defaultContext: '', fontSize: 'medium' };
+    currentSettings = { model: 'claude-sonnet-5', language: 'auto', uiLang: 'en', maxTabs: 40, theme: 'system', defaultContext: '', fontSize: 'medium', contentDepth: 'standard' };
+    document.querySelectorAll('input[name="contentDepth"]').forEach((r) => { r.checked = r.value === 'standard'; });
     showDangerFeedback(i18n?.t('options_clearAllDone'));
   });
 });

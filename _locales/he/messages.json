@@ -1,6 +1,7 @@
 {
   "appName": { "message": "TabToTable AI", "description": "שם התוסף" },
   "appDesc": { "message": "הופך את כל הלשוניות הפתוחות בחלון לטבלת השוואה מסודרת בלחיצת כפתור", "description": "תיאור התוסף" },
+  "commandOpenPopup": { "message": "פתח את TabToTable AI", "description": "תיאור קיצור המקלדת" },
 
   "popup_scanBtn": { "message": "בנה טבלה מהלשוניות הפתוחות" },
   "popup_scanning": { "message": "סורק ובונה טבלה..." },
@@ -74,10 +75,20 @@
 
   "options_maxTabsSection": { "message": "מגבלת לשוניות לסריקה" },
 
+  "options_contentDepthSection": { "message": "עומק קריאת תוכן" },
+  "options_depthConcise": { "message": "תמציתי" },
+  "options_depthStandard": { "message": "רגיל" },
+  "options_depthThorough": { "message": "מעמיק" },
+  "options_contentDepthHint": { "message": "כמה מהטקסט של כל דף נקרא לפני ההשוואה. מעמיק קורא יותר מכל לשונית — מתאים לכמה עמודים בודדים; תמציתי מהיר וזול יותר על אצווה גדולה." },
+
   "options_themeSection": { "message": "תמה" },
   "options_themeSystem": { "message": "🖥 מערכת" },
   "options_themeLight": { "message": "☀️ בהיר" },
   "options_themeDark": { "message": "🌙 כהה" },
+
+  "options_shortcutSection": { "message": "קיצור מקלדת" },
+  "options_shortcutHint": { "message": "פותח את הפופאפ מיידית, מכל לשונית." },
+  "options_shortcutChange": { "message": "שנה קיצור ←" },
 
   "options_dangerSection": { "message": "אזור מסוכן" },
   "options_resetQuota": { "message": "איפוס מכסה חודשית" },
@@ -99,8 +110,11 @@
 
   "results_title": { "message": "TabToTable AI — תוצאות" },
   "results_defaultTitle": { "message": "טבלת השוואה" },
-  "results_csv": { "message": "⭳ CSV" },
-  "results_md": { "message": "⎘ Markdown" },
+  "results_export": { "message": "⭳ ייצוא" },
+  "results_exportCsv": { "message": "CSV" },
+  "results_exportMd": { "message": "Markdown (העתקה)" },
+  "results_exportJson": { "message": "JSON" },
+  "results_jsonCopied": { "message": "הטבלה הורדה כ-JSON ✓" },
   "results_print": { "message": "🖨 הדפסה" },
   "results_history": { "message": "🕓 היסטוריה" },
   "results_historyClose": { "message": "🕓 היסטוריה ✕" },

@@ -26,6 +26,39 @@
   .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .actions .btn { width: auto; padding-inline: 16px; }
 
+  /* Export dropdown */
+  .dropdown { position: relative; }
+  #exportMenu {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-start: 0;
+    min-width: 168px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 6px;
+    z-index: 20;
+  }
+  #exportMenu button {
+    display: block;
+    width: 100%;
+    text-align: start;
+    background: none;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  #exportMenu button:hover,
+  #exportMenu button:focus-visible {
+    background: var(--accent-soft);
+    outline: none;
+  }
+
   /* Search bar */
   .search-row {
     display: flex;
@@ -331,8 +364,14 @@
         </div>
       </div>
       <div class="actions">
-        <button id="csvBtn" class="btn btn-secondary btn-sm" data-i18n="results_csv"></button>
-        <button id="mdBtn" class="btn btn-secondary btn-sm" data-i18n="results_md"></button>
+        <div class="dropdown">
+          <button id="exportBtn" class="btn btn-secondary btn-sm" aria-haspopup="true" aria-expanded="false" data-i18n="results_export"></button>
+          <div id="exportMenu" hidden role="menu">
+            <button type="button" data-format="csv" role="menuitem" data-i18n="results_exportCsv"></button>
+            <button type="button" data-format="json" role="menuitem" data-i18n="results_exportJson"></button>
+            <button type="button" data-format="md" role="menuitem" data-i18n="results_exportMd"></button>
+          </div>
+        </div>
         <button id="printBtn" class="btn btn-secondary btn-sm" data-i18n="results_print"></button>
         <button id="historyBtn" class="history-toggle" data-i18n="results_history"></button>
       </div>

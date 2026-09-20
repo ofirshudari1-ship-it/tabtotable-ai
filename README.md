@@ -31,8 +31,9 @@ TabToTable AI needs your own Anthropic API key to work — it does not come with
 - **Compare open tabs**: builds a single comparison table from every eligible `http(s)` tab in the current window.
 - **Manual tab picker**: choose exactly which open tabs to include (with a "select all / none" toggle and a live "X/Y selected" counter) instead of scanning everything.
 - **Refine after building**: type a free-text follow-up request on the results page to update the table — add a column, filter rows, re-sort — without re-scanning your tabs. Each refine is exactly one explicit API call.
-- **Export**: copy the table as Markdown or export to CSV directly from the results page.
-- **Configurable model and scope**: choose between Claude Sonnet 5 and Haiku 4.5, set a tab-scan limit, and set default output language (auto/Hebrew/English).
+- **Export**: one "Export" menu on the results page — download as CSV or JSON, or copy the table as Markdown.
+- **Configurable model and scope**: choose between Claude Sonnet 5 and Haiku 4.5, set a tab-scan limit, a content-depth level (concise/standard/thorough — how much of each page is read), and default output language (auto/Hebrew/English).
+- **Keyboard shortcut**: `Alt+Shift+T` opens the popup instantly from any tab (reassignable at `chrome://extensions/shortcuts`).
 - **Reliability**: tab content is read in parallel (not one-by-one) for speed, requests time out instead of hanging indefinitely, and a single automatic retry smooths over one-off network hiccups (never on an invalid key, to avoid wasting API calls).
 
 ## Privacy
