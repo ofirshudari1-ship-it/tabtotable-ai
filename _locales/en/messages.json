@@ -130,6 +130,8 @@
   "results_copyUrl": { "message": "Copy link" },
   "results_copyCell": { "message": "Click to copy" },
   "results_clearSearch": { "message": "Clear search" },
+  "results_sortHint": { "message": "Sort by $COLUMN$", "placeholders": { "column": { "content": "$1" } } },
+  "results_noMatches": { "message": "No rows match your search." },
 
   "results_refinePlaceholder": { "message": "Refine this table — e.g. \"add a column for founding year\", \"only keep free plans\"" },
   "results_refineBtn": { "message": "Refine" },

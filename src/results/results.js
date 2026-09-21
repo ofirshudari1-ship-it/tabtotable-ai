@@ -72,6 +72,9 @@ function renderTable(result) {
     const th = document.createElement('th');
     th.tabIndex = 0;
     th.dataset.col = i;
+    th.setAttribute('role', 'button');
+    th.setAttribute('aria-sort', 'none');
+    th.title = tr('results_sortHint', [col]);
 
     const icon = document.createElement('i');
     icon.className = 'sort-icon';
@@ -174,7 +177,7 @@ function sortBy(colIndex, table) {
   buildBodyRows(tbody, sorted);
   applySearch(searchInput.value);
 
-  // Update header sort icons
+  // Update header sort icons + aria-sort (screen-reader affordance)
   table.querySelectorAll('thead th').forEach((th, i) => {
     th.classList.remove('sort-asc', 'sort-desc');
     const icon = th.querySelector('.sort-icon');
@@ -182,25 +185,50 @@ function sortBy(colIndex, table) {
     if (i === colIndex) {
       th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
       icon.textContent = sortState.dir === 1 ? '↑' : '↓';
+      th.setAttribute('aria-sort', sortState.dir === 1 ? 'ascending' : 'descending');
     } else {
       icon.textContent = '↕';
+      th.setAttribute('aria-sort', 'none');
     }
   });
 }
 
 function applySearch(query) {
   const q = query.trim().toLowerCase();
-  const rows = host.querySelectorAll('tbody tr');
+  const tbody = host.querySelector('tbody');
+  const dataRows = tbody ? Array.from(tbody.querySelectorAll('tr:not(.no-matches-row)')) : [];
   let visible = 0;
-  rows.forEach((tr_) => {
+  dataRows.forEach((tr_) => {
     const matches = !q || Array.from(tr_.querySelectorAll('td')).some((td) =>
       td.textContent.toLowerCase().includes(q)
     );
     tr_.classList.toggle('hidden-row', !matches);
     if (matches) visible++;
   });
-  updateRowCount(visible, rows.length);
+  updateRowCount(visible, dataRows.length);
   clearSearch.hidden = !q;
+  toggleNoMatchesRow(tbody, q && visible === 0 && dataRows.length > 0);
+}
+
+// Inline "no rows match" row shown INSIDE the table (spans every column) so
+// the table frame stays visible and the message sits where the missing rows
+// would be, instead of the whole table area collapsing to nothing.
+function toggleNoMatchesRow(tbody, show) {
+  if (!tbody) return;
+  let row = tbody.querySelector('.no-matches-row');
+  if (!show) {
+    if (row) row.remove();
+    return;
+  }
+  if (row) return;
+  const colCount = currentResult?.columns?.length || 1;
+  row = document.createElement('tr');
+  row.className = 'no-matches-row';
+  const td = document.createElement('td');
+  td.colSpan = colCount;
+  td.textContent = tr('results_noMatches');
+  row.appendChild(td);
+  tbody.appendChild(row);
 }
 
 function updateRowCount(visible, total) {
@@ -491,7 +519,18 @@ async function init() {
     host.innerHTML = '';
     const empty = document.createElement('div');
     empty.id = 'empty';
-    empty.textContent = tr('results_empty');
+
+    const icon = document.createElement('span');
+    icon.className = 'empty-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '📊';
+    empty.appendChild(icon);
+
+    const text = document.createElement('span');
+    text.className = 'empty-text';
+    text.textContent = tr('results_empty');
+    empty.appendChild(text);
+
     host.appendChild(empty);
     exportBtn.disabled = true;
     return;

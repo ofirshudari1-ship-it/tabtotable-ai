@@ -16,6 +16,7 @@ const tabPickerList = document.getElementById('tabPickerList');
 const tabPickerCount = document.getElementById('tabPickerCount');
 const tabPickerAll = document.getElementById('tabPickerAll');
 const tabPickerNone = document.getElementById('tabPickerNone');
+const versionBadge = document.getElementById('versionBadge');
 
 let i18n = null;
 let allTabs = []; // [{id, title, url, favIconUrl}]
@@ -42,6 +43,12 @@ function setStatus(text, kind) {
 }
 
 async function init() {
+  // Read the version straight from the manifest instead of a hardcoded
+  // string in popup.html — the badge previously had to be hand-edited on
+  // every release and had already gone stale once before (see CHANGELOG
+  // v0.2.0), so this removes that whole class of bug going forward.
+  versionBadge.textContent = 'v' + chrome.runtime.getManifest().version;
+
   const { settings, apiKey, lastScanAt, lastTabCount, lastResult } = await chrome.storage.local.get([
     'settings', 'apiKey', 'lastScanAt', 'lastTabCount', 'lastResult',
   ]);

@@ -130,6 +130,8 @@
   "results_copyUrl": { "message": "העתק קישור" },
   "results_copyCell": { "message": "לחץ להעתקה" },
   "results_clearSearch": { "message": "נקה חיפוש" },
+  "results_sortHint": { "message": "מיין לפי $COLUMN$", "placeholders": { "column": { "content": "$1" } } },
+  "results_noMatches": { "message": "אין שורות שתואמות את החיפוש." },
 
   "results_refinePlaceholder": { "message": "עדכן את הטבלה — למשל \"הוסף עמודת שנת ייסוד\", \"השאר רק תוכניות חינמיות\"" },
   "results_refineBtn": { "message": "עדכן" },

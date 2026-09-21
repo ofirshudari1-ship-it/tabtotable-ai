@@ -168,6 +168,13 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface); }
   tbody tr.hidden-row { display: none; }
+  tbody tr.no-matches-row td {
+    text-align: center;
+    color: var(--ink-faint);
+    padding: 28px 16px;
+    font-size: 13px;
+  }
+  tbody tr.no-matches-row:hover td { background: none; }
 
   td.copyable {
     cursor: pointer;
@@ -210,12 +217,19 @@
   #empty {
     color: var(--ink-faint);
     font-size: 14px;
-    padding: 60px 0;
+    padding: 60px 24px;
     text-align: center;
     background: var(--surface-2);
     border: 1px dashed var(--line-strong);
     border-radius: 14px;
   }
+  #empty .empty-icon {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 10px;
+    opacity: 0.55;
+  }
+  #empty .empty-text { max-width: 360px; margin: 0 auto; line-height: 1.6; }
 
   /* History panel */
   .history-toggle {
