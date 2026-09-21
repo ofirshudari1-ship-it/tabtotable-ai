@@ -110,6 +110,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     const { apiKey } = await chrome.storage.local.get(['apiKey']);
     if (!apiKey) {
+      // Flag read once by options.js to show a "start here" banner instead
+      // of dropping a first-time user into ten equally-weighted settings
+      // sections with no indication which one is actually required.
+      await chrome.storage.local.set({ firstRun: true });
       chrome.runtime.openOptionsPage();
     }
   }

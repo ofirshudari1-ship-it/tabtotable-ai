@@ -51,11 +51,19 @@ function refreshQuotaText() {
 }
 
 // Load saved data
-chrome.storage.local.get(['apiKey', 'settings'], async ({ apiKey, settings }) => {
+chrome.storage.local.get(['apiKey', 'settings', 'firstRun'], async ({ apiKey, settings, firstRun }) => {
   if (apiKey) apiKeyInput.value = apiKey;
   if (settings) currentSettings = { ...currentSettings, ...settings };
 
   await applyUiLang(currentSettings.uiLang);
+
+  // First-run only: point straight at the one required step and clear the
+  // flag so it never shows again once the key is set up.
+  if (firstRun) {
+    document.getElementById('onboardBanner').hidden = false;
+    chrome.storage.local.remove('firstRun');
+    apiKeyInput.focus();
+  }
 
   document.querySelectorAll('.model-card').forEach((card) => {
     const selected = card.dataset.model === currentSettings.model;

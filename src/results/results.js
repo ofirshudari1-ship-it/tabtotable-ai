@@ -147,7 +147,16 @@ function buildBodyRows(tbody, rows) {
         td.textContent = text;
         td.className = 'copyable';
         td.title = tr('results_copyCell');
-        td.addEventListener('click', () => copyText(text));
+        // Keyboard-reachable, not just mouse: a plain <td> has no built-in
+        // focus/activation, so a keyboard-only user could click every
+        // sortable header but never copy a cell without these three lines.
+        td.tabIndex = 0;
+        td.setAttribute('role', 'button');
+        const activate = () => copyText(text);
+        td.addEventListener('click', activate);
+        td.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+        });
       }
       tr_.appendChild(td);
     });
@@ -325,6 +334,9 @@ exportMenu.addEventListener('click', (e) => {
   const format = btn.dataset.format;
   if (format === 'csv') {
     downloadFile(buildCsv(currentResult), 'text/csv', 'csv');
+    // CSV was the one export path with zero feedback — JSON and Markdown
+    // both toast on success, CSV silently did nothing visible.
+    showToast(tr('results_csvDownloaded'));
   } else if (format === 'json') {
     downloadFile(buildJson(currentResult), 'application/json', 'json');
     showToast(tr('results_jsonCopied'));
@@ -359,6 +371,22 @@ function setRefineStatus(text, kind) {
   refineStatus.className = 'refine-status' + (kind ? ' ' + kind : '');
 }
 
+const refineBtnLabel = refineBtn.textContent;
+
+// Same spinner-in-button pattern as the popup's scan button, instead of a
+// dimmed table being the only sign that something is happening.
+function setRefiningNow(isRefining) {
+  refineBtn.innerHTML = '';
+  if (isRefining) {
+    const spinner = document.createElement('span');
+    spinner.className = 'spinner';
+    refineBtn.appendChild(spinner);
+    refineBtn.append(tr('results_refining'));
+  } else {
+    refineBtn.append(refineBtnLabel);
+  }
+}
+
 function doRefine() {
   if (refining) return;
   const instruction = refineInput.value.trim();
@@ -371,6 +399,7 @@ function doRefine() {
   refining = true;
   refineBtn.disabled = true;
   refineInput.disabled = true;
+  setRefiningNow(true);
   const tableWrap = host.querySelector('.table-wrap');
   if (tableWrap) tableWrap.classList.add('busy');
   setRefineStatus(tr('results_refining'), '');
@@ -379,6 +408,7 @@ function doRefine() {
     refining = false;
     refineBtn.disabled = false;
     refineInput.disabled = false;
+    setRefiningNow(false);
     if (tableWrap) tableWrap.classList.remove('busy');
 
     if (chrome.runtime.lastError) {
@@ -453,6 +483,10 @@ function renderHistory() {
       items.forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'history-item' + (idx === 0 && !isLoadedFromHistory ? ' active' : '');
+        // Keyboard-reachable like every other row action here — a plain
+        // click handler on a <div> is invisible to Tab/Enter.
+        div.tabIndex = 0;
+        div.setAttribute('role', 'button');
 
         const date = new Date(item.scanAt);
         const dateStr = date.toLocaleDateString(localeTag, { day: 'numeric', month: 'short' });
@@ -468,10 +502,14 @@ function renderHistory() {
 
         div.appendChild(titleSpan);
         div.appendChild(metaSpan);
-        div.addEventListener('click', () => {
+        const activate = () => {
           document.querySelectorAll('.history-item').forEach((d) => d.classList.remove('active'));
           div.classList.add('active');
           loadHistoryEntry(item);
+        };
+        div.addEventListener('click', activate);
+        div.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
         });
         list.appendChild(div);
       });

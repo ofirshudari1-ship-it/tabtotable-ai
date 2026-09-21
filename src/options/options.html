@@ -121,6 +121,30 @@
   .legal-links { display: flex; gap: 16px; font-size: 12px; }
   .legal-links a { color: var(--ink-soft); text-decoration: underline; }
   .legal-links a:hover { color: var(--ink); }
+
+  /* First-run banner — points straight at the one required step (API key)
+     instead of leaving a new user to scan ten sections to find it. */
+  .onboard-banner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--accent-soft);
+    border: 1px solid rgba(240,162,2,0.35);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    animation: onboard-in 0.25s ease;
+  }
+  @keyframes onboard-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .onboard-banner { animation: none; }
+  }
+  .onboard-banner .onboard-icon { font-size: 18px; flex: none; }
+  .onboard-banner b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .onboard-banner p { margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -134,6 +158,14 @@
       <b data-i18n="options_leadBold"></b>
       <span data-i18n="options_leadPost"></span>
     </p>
+
+    <div class="onboard-banner" id="onboardBanner" hidden>
+      <span class="onboard-icon" aria-hidden="true">👋</span>
+      <div>
+        <b data-i18n="options_onboardTitle"></b>
+        <p data-i18n="options_onboardBody"></p>
+      </div>
+    </div>
 
     <!-- API Key -->
     <div class="section">
