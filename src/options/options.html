@@ -142,7 +142,10 @@
   @media (prefers-reduced-motion: reduce) {
     .onboard-banner { animation: none; }
   }
-  .onboard-banner .onboard-icon { font-size: 18px; flex: none; }
+  .onboard-banner .onboard-icon { flex: none; width: 40px; height: 40px; }
+  .onboard-banner .onboard-icon rect { fill: var(--accent-soft); }
+  .onboard-banner .onboard-icon .key { fill: none; stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .onboard-banner .onboard-icon .spark { fill: var(--accent); }
   .onboard-banner b { display: block; font-size: 13px; margin-bottom: 2px; }
   .onboard-banner p { margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
 </style>
@@ -160,7 +163,14 @@
     </p>
 
     <div class="onboard-banner" id="onboardBanner" hidden>
-      <span class="onboard-icon" aria-hidden="true">👋</span>
+      <svg class="onboard-icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <rect x="0.5" y="0.5" width="39" height="39" rx="10"/>
+        <g class="key">
+          <circle cx="15" cy="16" r="5.2"/>
+          <path d="M18.7 19.7 L28.5 29.5 M24.5 25.5 L28 22 M27 28.5 L30.5 25"/>
+        </g>
+        <circle class="spark" cx="28.5" cy="12" r="2"/>
+      </svg>
       <div>
         <b data-i18n="options_onboardTitle"></b>
         <p data-i18n="options_onboardBody"></p>
