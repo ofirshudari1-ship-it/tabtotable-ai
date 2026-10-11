@@ -1,6 +1,6 @@
 # Privacy Policy — TabToTable AI
 
-*Last updated: 2026-09-15 · Version 0.6.0*
+*Last updated: 2026-10-12 · Version 0.10.0*
 
 **Single purpose:** TabToTable AI reads the content of tabs you have open, purely so it can build a comparison table from them at your request. It collects nothing beyond what that single purpose requires, and nothing is collected automatically — every scan is a direct action you take (clicking "Build table").
 
@@ -25,6 +25,11 @@ Anthropic processes this request under its own API terms. TabToTable AI's use of
 Your Anthropic API key, settings, scan results, and 5-item scan history are stored **only** in `chrome.storage.local` — local to your browser profile on your own device. Nothing is synced to a cloud account, and nothing is stored on any server we operate (again: we operate none).
 
 Uninstalling the extension deletes all of this local data.
+
+## Other network requests
+
+- **Update check (since v0.10.0, on by default, can be turned off in Settings > Updates).** Because the extension is installed from a GitHub ZIP, Chrome cannot update it. At most once every 12 hours it sends one HTTPS GET to `api.github.com/repos/ofirshudari1-ship-it/tabtotable-ai/releases/latest` to read the newest release number and shows a "new version available" notice (popup, Settings, NEW badge) if it is newer. The request carries no cookies, no referrer and no identifier, and nothing about you, your tabs or your settings; GitHub sees an ordinary request from your IP address. Nothing is downloaded or installed automatically. The result (a version number and a timestamp) is kept in `chrome.storage.local`. No extra browser permission is needed.
+- **Web fonts.** The popup, Settings and results pages load their fonts from Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`). Google receives the font request and your IP address, and nothing from your tabs, settings or API key.
 
 ## What changes if this policy changes
 

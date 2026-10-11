@@ -42,6 +42,20 @@ function setStatus(text, kind) {
   statusEl.className = 'status-msg' + (kind ? ' ' + kind : '');
 }
 
+// "New version available" notice (GitHub latest release; see shared/update-check.js).
+// Cosmetic only: any failure here must never affect scanning.
+async function renderUpdateNotice() {
+  try {
+    const v = await ExtUpdate.getView();
+    const box = document.getElementById('updateNotice');
+    box.hidden = !v.showNotice;
+    if (v.showNotice) {
+      document.getElementById('updateNoticeText').textContent = i18n.t('popup_updateText', [v.latest]);
+      document.getElementById('updateNoticeLink').href = v.url;
+    }
+  } catch (e) { /* ignore */ }
+}
+
 async function init() {
   // Read the version straight from the manifest instead of a hardcoded
   // string in popup.html — the badge previously had to be hand-edited on
@@ -61,6 +75,8 @@ async function init() {
   const lang = settings?.uiLang || 'en';
   i18n = await TTT_I18N.load(lang);
   TTT_I18N.applyToDom(i18n, document);
+  renderUpdateNotice();
+  ExtUpdate.check().then(renderUpdateNotice);
   isScanningNow(false);
   quotaBadge.textContent = i18n.t('popup_quotaLabel');
   quotaText.textContent = i18n.t('popup_quotaFailed');

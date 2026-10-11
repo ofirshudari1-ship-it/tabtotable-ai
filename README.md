@@ -8,7 +8,7 @@ Click the extension icon, optionally describe what you're comparing (e.g. "compa
 
 ## Install
 
-TabToTable AI is not published on the Chrome Web Store, so installation is manual and there is no automatic update:
+TabToTable AI is not published on the Chrome Web Store, so installation is manual and Chrome cannot update it by itself (from v0.10.0 it tells you when a newer release exists - see Updates below):
 
 1. Download the latest `.zip` from the [Releases page](https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases/latest).
 2. Extract the zip to a folder you'll keep on your computer.
@@ -17,6 +17,14 @@ TabToTable AI is not published on the Chrome Web Store, so installation is manua
 5. Click **Load unpacked** and select the folder you extracted.
 
 Because this isn't a Chrome Web Store install, Chrome will never update it automatically. To get a new version later, download the new release zip and repeat the steps above (extracting over the same folder, then clicking the reload icon on the extension's card at `chrome://extensions`, works too).
+
+### Updates
+
+From v0.10.0 TabToTable AI checks its own GitHub repository for a newer release and, if there is one, shows a **new version available - download** notice in the popup and in Settings, and a **NEW** badge on the toolbar icon. It never downloads or installs anything by itself.
+
+- At most one check every 12 hours (one HTTPS request to `api.github.com`, this repo only; result cached in `chrome.storage.local`).
+- On by default. Turn it off under **Settings > Updates**. **Check now** forces a check.
+- No extra browser permission is needed (the extension already holds `<all_urls>`).
 
 ## Set up your API key
 
@@ -38,6 +46,6 @@ TabToTable AI needs your own Anthropic API key to work — it does not come with
 
 ## Privacy
 
-TabToTable AI is **not** a local-only tool: to build a table, it sends the text content of your open tabs to Anthropic's API (`api.anthropic.com`) directly from your browser, using your own API key. No other server is contacted, and there is no analytics or tracking layer. Your API key and saved results are stored only in `chrome.storage.local` on your own device. Uninstalling the extension removes your saved key and local history.
+TabToTable AI is **not** a local-only tool: to build a table, it sends the text content of your open tabs to Anthropic's API (`api.anthropic.com`) directly from your browser, using your own API key. No analytics or tracking layer exists. Besides Anthropic, the only other requests are (1) the optional, switch-off-able version check against GitHub described under Updates, and (2) the extension pages load their web fonts from Google Fonts (Google sees your IP address and the font request, nothing else). Your API key and saved results are stored only in `chrome.storage.local` on your own device. Uninstalling the extension removes your saved key and local history.
 
 Because tab content leaves your browser as part of normal operation, avoid running it against tabs containing sensitive or confidential information you wouldn't otherwise send to a third-party AI service.

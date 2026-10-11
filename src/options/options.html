@@ -319,12 +319,32 @@
       <div class="inline-feedback" id="dangerFeedback"></div>
     </div>
 
+    <!-- Updates -->
+    <div class="section" id="updatesSection">
+      <p class="section-title" data-i18n="options_updatesSection"></p>
+      <div class="field-hint" id="updateStatus" role="status" aria-live="polite"></div>
+      <div id="updateAvailable" class="note" hidden>
+        <span id="updateAvailableText"></span>
+        <div class="action-row">
+          <a id="updateAvailableLink" class="btn" style="width:auto; padding-inline:16px; text-decoration:none;" href="#" target="_blank" rel="noopener"></a>
+          <button id="updateDismiss" class="btn btn-secondary" style="width:auto; padding-inline:16px;" data-i18n="options_updateDismiss"></button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="inline-check"><input type="checkbox" id="updateCheckEnabled"> <span data-i18n="options_updateCheckLabel"></span></label>
+        <div class="field-hint" data-i18n="options_updateCheckHint"></div>
+      </div>
+      <div class="action-row">
+        <button id="updateCheckNow" class="btn btn-secondary" style="width:auto; padding-inline:16px;" data-i18n="options_updateCheckNow"></button>
+      </div>
+    </div>
+
     <!-- Legal -->
     <div class="section">
       <p class="section-title" data-i18n="options_legalSection"></p>
       <div class="legal-links">
-        <a href="../../PRIVACY.md" target="_blank" rel="noopener" data-i18n="options_privacyLink"></a>
-        <a href="../../EULA.md" target="_blank" rel="noopener" data-i18n="options_eulaLink"></a>
+        <a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/blob/master/PRIVACY.md" target="_blank" rel="noopener" data-i18n="options_privacyLink"></a>
+        <a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/blob/master/EULA.md" target="_blank" rel="noopener" data-i18n="options_eulaLink"></a>
       </div>
     </div>
 
@@ -335,6 +355,7 @@
   </div>
 
   <script src="../shared/i18n.js"></script>
+  <script src="../shared/update-check.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

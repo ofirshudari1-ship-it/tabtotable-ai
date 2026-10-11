@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TabToTable AI</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Assistant:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -611,7 +613,7 @@
   <div class="wrap site-bar">
     <div class="wordmark">
       <span class="name">📊 TabToTable AI</span>
-      <span class="version-chip mono">v0.7.0 · MVP</span>
+      <span class="version-chip mono">v0.10.0</span>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <a class="btn btn-ghost" href="https://github.com/ofirshudari1-ship-it/tabtotable-ai" target="_blank" rel="noopener">GitHub</a>
@@ -815,7 +817,10 @@
       <p>היסטוריה מלאה, כולל נימוקים לכל שינוי, ב-<code class="mono" style="background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:4px;">CHANGELOG.md</code> ב-<a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/blob/master/CHANGELOG.md" target="_blank" rel="noopener">GitHub</a>.</p>
     </div>
     <div class="history-list">
-      <div class="history-row"><span class="v current mono">v0.7.0</span><span class="d">2026-09-15</span><span class="t">בחירת לשוניות ידנית (Tab Picker), עדכון/Refine של טבלה קיימת, סריקה מקבילית, timeout+retry על ה-API.</span></div>
+      <div class="history-row"><span class="v current mono">v0.10.0</span><span class="d">2026-10-12</span><span class="t">הודעת "יצאה גרסה חדשה" (בדיקה אופציונלית מול GitHub, אפשר לכבות), תיקון הצגת מספרים וטקסטים בפופאפ/הגדרות/תוצאות, תיקון קישורי Privacy/EULA.</span></div>
+      <div class="history-row"><span class="v mono">v0.9.x</span><span class="d">2026-09-21/29</span><span class="t">נגישות מקלדת בטבלה ובהיסטוריה, באנר צעד ראשון, גרפיקה ממותגת, תיקון מספר הגרסה בפופאפ.</span></div>
+      <div class="history-row"><span class="v mono">v0.8.0</span><span class="d">2026-09-20</span><span class="t">עומק תוכן מתכוונן, קיצור מקלדת לפופאפ, תפריט ייצוא אחיד כולל JSON.</span></div>
+      <div class="history-row"><span class="v mono">v0.7.0</span><span class="d">2026-09-15</span><span class="t">בחירת לשוניות ידנית (Tab Picker), עדכון/Refine של טבלה קיימת, סריקה מקבילית, timeout+retry על ה-API.</span></div>
       <div class="history-row"><span class="v mono">v0.6.0</span><span class="d">2026-09-15</span><span class="t">ביקורת RTL/i18n מלאה, אייקון 32px חסר, build script חד-פעמי, חיזוק CSP.</span></div>
       <div class="history-row"><span class="v mono">v0.5.0</span><span class="d">2026-09-14</span><span class="t">שדרוג מבני מלא (src/ מפוצל, _locales/ תקני), PRIVACY.md/EULA.md, ברירת מחדל אנגלית.</span></div>
       <div class="history-row"><span class="v mono">v0.4.0</span><span class="d">2026-09-14</span><span class="t">CSP מפורש, שפת ממשק he/en, פתיחת הגדרות אוטומטית בהתקנה.</span></div>
@@ -832,17 +837,17 @@
       <h2>איך מקבלים גרסה חדשה</h2>
     </div>
     <div class="updates-panel">
-      <span class="warn-badge">⚠ no auto-update</span>
+      <span class="warn-badge">GitHub ZIP - manual update</span>
       <p style="margin:0; font-size:15px; color:var(--ink);">
-        <strong>התוסף לא מתעדכן אוטומטית.</strong> Chrome מריץ עדכון אוטומטי רק לתוספים שמותקנים מ-Chrome Web Store (דרך <code class="mono">update_url</code> שגוגל שולט בו). TabToTable AI מותקן במצב מפתח (Load unpacked) ולכן אין לו שום מנגנון עדכון — Chrome פשוט לא בודק אם יש גרסה חדשה.
+        <strong>כרום לא מעדכן את התוסף בעצמו.</strong> עדכון אוטומטי קיים רק לתוספים מ-Chrome Web Store. TabToTable AI מותקן במצב מפתח (Load unpacked), ולכן מגרסה 0.10.0 הוא בודק בעצמו אם יצאה גרסה חדשה ב-GitHub (פעם ב-12 שעות לכל היותר, בלי לשלוח עליכם מידע, אפשר לכבות בהגדרות) ומציג הודעה עם קישור להורדה ותג NEW על הסמל.
       </p>
       <p style="margin:14px 0 0; font-size:14px; color:var(--ink-soft);">כדי לעבור לגרסה חדשה:</p>
       <ol>
         <li>נכנסים ל-<a class="gh-link" href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases" target="_blank" rel="noopener">github.com/ofirshudari1-ship-it/tabtotable-ai/releases</a> ומורידים את קובץ ה-zip של הגרסה החדשה.</li>
-        <li>פותחים <code class="mono">chrome://extensions</code>, מסירים (Remove) את הגרסה הישנה של TabToTable AI.</li>
-        <li>מחלצים את ה-zip החדש ולוחצים <strong>Load unpacked</strong> על התיקייה המחולצת.</li>
+        <li>מחלצים את ה-zip החדש מעל התיקייה הקיימת (דריסת הקבצים).</li>
+        <li>ב-<code class="mono">chrome://extensions</code> לוחצים על סמל הרענון בכרטיס של TabToTable AI. ההגדרות והמפתח נשמרים.</li>
       </ol>
-      <p style="margin-top:16px; font-size:13px; color:var(--ink-faint);">אם/כשהתוסף יפורסם ב-Chrome Web Store, זה ישתנה — עדכונים יתקינו את עצמם אוטומטית כמו כל תוסף רגיל. עד אז, זו הדרך היחידה.</p>
+      <p style="margin-top:16px; font-size:13px; color:var(--ink-faint);">אם התוסף יפורסם ב-Chrome Web Store, העדכונים יותקנו אוטומטית. עד אז ההורדה והרענון נעשים ידנית.</p>
     </div>
   </div>
 </section>
@@ -858,7 +863,7 @@
       <div class="install-steps">
         <div class="install-step">
           <span class="num">1</span>
-          <p>מורידים את <code class="mono">TabToTable-AI-v0.7.0.zip</code> מ-<a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases" target="_blank" rel="noopener">GitHub Releases</a> ומחלצים לתיקייה.</p>
+          <p>מורידים את <code class="mono">TabToTable-AI-v0.10.0.zip</code> מ-<a href="https://github.com/ofirshudari1-ship-it/tabtotable-ai/releases" target="_blank" rel="noopener">GitHub Releases</a> ומחלצים לתיקייה.</p>
         </div>
         <div class="install-step">
           <span class="num">2</span>

@@ -1,3 +1,4 @@
+importScripts('../shared/update-check.js');
 const DEFAULT_MODEL = 'claude-sonnet-5';
 const DEFAULT_MAX_TABS = 40;
 const MAX_BODY_CHARS = 4000; // fallback when settings.contentDepth is missing/unrecognized
@@ -106,7 +107,15 @@ function m(lang) {
 }
 
 // On first install: open options page if no API key is set
+// Optional "new version available" check (GitHub latest release, at most once per
+// 12h, switchable off in Settings > Updates). Re-applies the toolbar badge from the
+// cached result whenever the service worker wakes; never throws.
+ExtUpdate.applyBadge();
+ExtUpdate.check();
+chrome.runtime.onStartup.addListener(() => { ExtUpdate.check(); });
+
 chrome.runtime.onInstalled.addListener(async (details) => {
+  ExtUpdate.check();
   if (details.reason === 'install') {
     const { apiKey } = await chrome.storage.local.get(['apiKey']);
     if (!apiKey) {

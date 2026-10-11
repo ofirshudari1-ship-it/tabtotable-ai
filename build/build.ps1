@@ -75,6 +75,18 @@ foreach ($key in $msgRefs) {
 }
 Write-Host "  OK  all __MSG_*__ placeholders resolve in en+he"
 
+# 4b. Locale key parity (en == he), referenced keys exist, named placeholders declared
+$locRes = & node (Join-Path $PSScriptRoot 'check-locales.js') 2>&1
+if ($LASTEXITCODE -ne 0) { Fail "locale check failed: $locRes" }
+Write-Host "  OK  locales: $locRes"
+
+# 4c. Unit tests (no browser needed)
+foreach ($t in (Get-ChildItem -Path 'tests' -Filter '*.test.js' -ErrorAction SilentlyContinue)) {
+  $out = & node $t.FullName 2>&1
+  if ($LASTEXITCODE -ne 0) { Fail "$($t.Name) failed: $out" }
+  Write-Host "  OK  $($t.Name): $out"
+}
+
 # 5. Package the ZIP — remove old versioned ZIPs first (no duplicates in root)
 Get-ChildItem -Path $root -Filter 'TabToTable-AI-v*.zip' | ForEach-Object {
   Write-Host "  Removing stale package: $($_.Name)"

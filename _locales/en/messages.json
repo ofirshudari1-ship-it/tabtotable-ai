@@ -140,5 +140,19 @@
   "results_refineBtn": { "message": "Refine" },
   "results_refineEmpty": { "message": "Type what you want to change in the table." },
   "results_refining": { "message": "Updating the table..." },
-  "results_refineDone": { "message": "Table updated ✔" }
+  "results_refineDone": { "message": "Table updated ✔" },
+  "popup_updateText": {"message": "New version available: $LATEST$", "placeholders": {"latest": {"content": "$1"}}},
+  "popup_updateLink": {"message": "Download"},
+  "options_updatesSection": {"message": "Updates"},
+  "options_updateCheckLabel": {"message": "Check for new versions automatically"},
+  "options_updateCheckHint": {"message": "TabToTable AI is installed from a GitHub ZIP, so Chrome cannot update it by itself. At most once every 12 hours, it asks GitHub (api.github.com) for the number of the latest release. Nothing about you, your tabs or your settings is sent, and nothing is downloaded or installed automatically. Turn this off and this check makes no network request at all."},
+  "options_updateCheckNow": {"message": "Check now"},
+  "options_updateAvailableText": {"message": "A new version is available: $LATEST$ (you have $CURRENT$). Download the ZIP, extract it over your current folder, then click the reload icon on the TabToTable AI card at chrome://extensions.", "placeholders": {"latest": {"content": "$1"}, "current": {"content": "$2"}}},
+  "options_updateDownload": {"message": "Download version $LATEST$", "placeholders": {"latest": {"content": "$1"}}},
+  "options_updateDismiss": {"message": "Not now"},
+  "options_updateStatusUpToDate": {"message": "You are up to date (version $CURRENT$).", "placeholders": {"current": {"content": "$1"}}},
+  "options_updateStatusAvailable": {"message": "Version $LATEST$ is available.", "placeholders": {"latest": {"content": "$1"}}},
+  "options_updateStatusChecking": {"message": "Checking..."},
+  "options_updateStatusFailed": {"message": "Could not check right now. Try again later."},
+  "options_updateStatusOff": {"message": "Automatic checking is off."}
 }

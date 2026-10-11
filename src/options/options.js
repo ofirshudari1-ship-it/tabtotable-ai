@@ -34,6 +34,7 @@ async function applyUiLang(lang) {
   i18n = await TTT_I18N.load(lang);
   TTT_I18N.applyToDom(i18n, document);
   refreshQuotaText();
+  renderUpdateUi();
 }
 
 // Show inline feedback in the danger zone
@@ -281,3 +282,51 @@ document.getElementById('clearAll').addEventListener('click', () => {
     showDangerFeedback(i18n?.t('options_clearAllDone'));
   });
 });
+
+// ---- "New version available" (GitHub latest release; see shared/update-check.js) ----
+// Saved immediately, independent of the API-key Save button.
+const updateAvailable = document.getElementById('updateAvailable');
+const updateAvailableText = document.getElementById('updateAvailableText');
+const updateAvailableLink = document.getElementById('updateAvailableLink');
+const updateDismiss = document.getElementById('updateDismiss');
+const updateCheckEnabled = document.getElementById('updateCheckEnabled');
+const updateCheckNow = document.getElementById('updateCheckNow');
+const updateStatus = document.getElementById('updateStatus');
+
+async function renderUpdateUi() {
+  if (!i18n) return;
+  try {
+    const v = await ExtUpdate.getView();
+    updateCheckEnabled.checked = v.enabled;
+    updateCheckNow.disabled = !v.enabled;
+    updateAvailable.hidden = !v.showNotice;
+    if (v.showNotice) {
+      updateAvailableText.textContent = i18n.t('options_updateAvailableText', [v.latest, v.current]);
+      updateAvailableLink.textContent = i18n.t('options_updateDownload', [v.latest]);
+      updateAvailableLink.href = v.url;
+    }
+    let status = '';
+    if (!v.enabled) status = i18n.t('options_updateStatusOff');
+    else if (v.available) status = i18n.t('options_updateStatusAvailable', [v.latest]);
+    else if (!v.checkedAt) status = '';
+    else if (!v.ok) status = i18n.t('options_updateStatusFailed');
+    else status = i18n.t('options_updateStatusUpToDate', [v.current]);
+    updateStatus.textContent = status;
+  } catch (e) { /* cosmetic only */ }
+}
+
+updateCheckEnabled.addEventListener('change', async () => {
+  await ExtUpdate.setEnabled(updateCheckEnabled.checked);
+  renderUpdateUi();
+});
+updateCheckNow.addEventListener('click', async () => {
+  updateCheckNow.disabled = true;
+  updateStatus.textContent = i18n.t('options_updateStatusChecking');
+  await ExtUpdate.check({ force: true });
+  renderUpdateUi();
+});
+updateDismiss.addEventListener('click', async () => {
+  await ExtUpdate.dismiss();
+  renderUpdateUi();
+});
+ExtUpdate.check().then(renderUpdateUi);

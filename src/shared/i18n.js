@@ -26,20 +26,30 @@ const TTT_I18N = (() => {
       messages = {};
     }
 
+    // Mirrors chrome.i18n.getMessage(): named placeholders ($NAME$) are resolved
+    // through the entry's "placeholders" map, whose "content" refers to the
+    // positional substitutions ($1, $2...). A plain $1/$2 in the message also works.
+    // (Before v0.10.0 only plain $1 was handled, so every "$COUNT$"-style message
+    // showed up literally on screen.)
     function t(key, subs) {
       const entry = messages[key];
       if (!entry) return key;
       let msg = entry.message || '';
-      if (Array.isArray(subs)) {
-        subs.forEach((val, i) => {
-          msg = msg.replace(new RegExp('\\$' + (i + 1) + '(?!\\d)', 'g'), val);
-          // also support named placeholders like $REMAINING$ -> positional $1
+      const list = Array.isArray(subs) ? subs.map(String) : (subs == null ? [] : [String(subs)]);
+      const positional = (content) =>
+        String(content).replace(/\$([1-9])(?!\d)/g, (m, d) => (list[d - 1] !== undefined ? list[d - 1] : ''));
+      if (entry.placeholders) {
+        const named = {};
+        Object.keys(entry.placeholders).forEach((name) => {
+          named[name.toLowerCase()] = entry.placeholders[name] && entry.placeholders[name].content;
         });
-        if (entry.placeholders) {
-          Object.values(entry.placeholders).forEach((ph, i) => {
-            // no-op: named placeholders already map to $1/$2 via content field
-          });
-        }
+        msg = msg.replace(/\$([A-Za-z0-9_@]+)\$/g, (m, name) => {
+          const content = named[name.toLowerCase()];
+          return content !== undefined ? positional(content) : m;
+        });
+      }
+      if (list.length) {
+        msg = msg.replace(/\$([1-9])(?!\d)/g, (m, d) => (list[d - 1] !== undefined ? list[d - 1] : m));
       }
       return msg;
     }

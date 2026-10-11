@@ -26,6 +26,21 @@
     color: var(--ink-faint);
     margin: 2px 0 0;
   }
+  .update-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--ink);
+    font-size: 11.5px;
+  }
+  .update-notice[hidden] { display: none; }
+  .update-notice a { color: var(--ink); font-weight: 700; white-space: nowrap; }
   .field { margin-bottom: 12px; }
   #scanLabel { display: inline-flex; align-items: center; gap: 8px; }
   .quota-block {
@@ -161,6 +176,10 @@
 </head>
 <body>
   <div class="accent-bar"></div>
+  <div class="update-notice" id="updateNotice" hidden>
+    <span id="updateNoticeText"></span>
+    <a id="updateNoticeLink" href="#" target="_blank" rel="noopener" data-i18n="popup_updateLink"></a>
+  </div>
   <div class="toprow">
     <div>
       <h1>📊 TabToTable AI</h1>
@@ -216,6 +235,7 @@
   </div>
 
   <script src="../shared/i18n.js"></script>
+  <script src="../shared/update-check.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

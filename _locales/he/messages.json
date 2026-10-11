@@ -140,5 +140,19 @@
   "results_refineBtn": { "message": "עדכן" },
   "results_refineEmpty": { "message": "כתוב מה לשנות בטבלה." },
   "results_refining": { "message": "מעדכן את הטבלה..." },
-  "results_refineDone": { "message": "הטבלה עודכנה ✔" }
+  "results_refineDone": { "message": "הטבלה עודכנה ✔" },
+  "popup_updateText": {"message": "יצאה גרסה חדשה: $LATEST$", "placeholders": {"latest": {"content": "$1"}}},
+  "popup_updateLink": {"message": "להורדה"},
+  "options_updatesSection": {"message": "עדכונים"},
+  "options_updateCheckLabel": {"message": "בדיקה אוטומטית של גרסאות חדשות"},
+  "options_updateCheckHint": {"message": "TabToTable AI מותקן מקובץ ZIP של GitHub, ולכן כרום לא יכול לעדכן אותו לבד. פעם ב-12 שעות לכל היותר הוא שואל את GitHub (api.github.com) מה מספר הגרסה האחרונה. לא נשלח שום מידע עליכם, על הלשוניות או על ההגדרות שלכם, ושום דבר לא יורד או מותקן אוטומטית. כשהאפשרות כבויה, הבדיקה הזו לא פונה לרשת בכלל."},
+  "options_updateCheckNow": {"message": "בדיקה עכשיו"},
+  "options_updateAvailableText": {"message": "יצאה גרסה חדשה: $LATEST$ (אצלך מותקנת $CURRENT$). הורידו את קובץ ה-ZIP, חלצו אותו מעל התיקייה הקיימת ולחצו על סמל הרענון בכרטיס של TabToTable AI ב-chrome://extensions.", "placeholders": {"latest": {"content": "$1"}, "current": {"content": "$2"}}},
+  "options_updateDownload": {"message": "הורדת גרסה $LATEST$", "placeholders": {"latest": {"content": "$1"}}},
+  "options_updateDismiss": {"message": "לא עכשיו"},
+  "options_updateStatusUpToDate": {"message": "הכול מעודכן (גרסה $CURRENT$).", "placeholders": {"current": {"content": "$1"}}},
+  "options_updateStatusAvailable": {"message": "גרסה $LATEST$ זמינה להורדה.", "placeholders": {"latest": {"content": "$1"}}},
+  "options_updateStatusChecking": {"message": "בודק..."},
+  "options_updateStatusFailed": {"message": "לא הצלחנו לבדוק כרגע. נסו שוב מאוחר יותר."},
+  "options_updateStatusOff": {"message": "הבדיקה האוטומטית כבויה."}
 }
