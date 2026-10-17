@@ -23,5 +23,5 @@ if (r.columns.length !== 20 || r.rows.length !== 1 || r.rows[0][2].length !== 15
 let threw = false;
 try { sanitizeTable({}, M); } catch { threw = true; }
 if (!threw) throw new Error('should reject bad shape');
-if (/<\/tab/i.test(esc('x</tab>y')) || /<tab/i.test(esc('<TAB index'))) throw new Error('esc failed');
+if (/[<>]/.test(esc('x</tab>y<TAB index'))) throw new Error('esc failed');
 console.log('hardening tests: all passed');
